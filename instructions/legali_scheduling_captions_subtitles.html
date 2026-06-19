@@ -1,0 +1,723 @@
+
+<h2 class="sr-only">Legali Video Studio — automatic scheduling, caption, and subtitle modules mock flow</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.r{font-family:var(--font-sans);color:var(--color-text-primary);}
+.nav{display:flex;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:14px;background:var(--color-background-secondary);}
+.nt{flex:1;padding:9px 0;font-size:12px;font-weight:500;text-align:center;cursor:pointer;color:var(--color-text-secondary);border-right:0.5px solid var(--color-border-tertiary);transition:background .15s;}
+.nt:last-child{border-right:none;}
+.nt.on{background:var(--color-background-primary);color:var(--color-text-primary);}
+.scr{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary);}
+.bar{display:flex;align-items:center;padding:8px 12px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary);gap:6px;}
+.dot{width:9px;height:9px;border-radius:50%;}
+.url{flex:1;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:4px;padding:3px 8px;font-size:11px;color:var(--color-text-tertiary);font-family:var(--font-mono);margin:0 8px;}
+.anno{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--color-background-info);border-top:0.5px solid var(--color-border-info);}
+.anno i{font-size:14px;color:var(--color-text-info);margin-top:1px;flex-shrink:0;}
+.anno-t{font-size:11px;color:var(--color-text-info);line-height:1.5;}
+.anno-t code{font-family:var(--font-mono);background:rgba(0,0,0,.07);padding:1px 4px;border-radius:3px;font-size:10px;}
+.br{display:flex;gap:8px;padding:10px 12px;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);}
+.btn{padding:7px 14px;font-size:12px;font-weight:500;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);}
+.btn:hover{background:var(--color-background-secondary);}
+.btn.pu{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.btn.pu:hover{opacity:.88;}
+.btn.pk{background:#db2777;border-color:#db2777;color:#fff;}
+
+.sh{font-size:11px;color:var(--color-text-secondary);padding:2px 6px;border-radius:3px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);font-family:var(--font-mono);}
+
+.tag{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:500;font-family:var(--font-mono);}
+.tag-s{background:var(--color-background-success);color:var(--color-text-success);}
+.tag-w{background:var(--color-background-warning);color:var(--color-text-warning);}
+.tag-i{background:var(--color-background-info);color:var(--color-text-info);}
+.tag-d{background:var(--color-background-secondary);color:var(--color-text-tertiary);}
+
+.split2{display:grid;grid-template-columns:200px 1fr;}
+.snav{background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary);padding:12px 8px;}
+.snav-logo{font-size:13px;font-weight:500;padding:4px 8px;margin-bottom:10px;}
+.snav-item{padding:7px 8px;border-radius:var(--border-radius-md);font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:2px;}
+.snav-item.on{background:var(--color-background-primary);color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);}
+.snav-item i{font-size:14px;}
+
+.smain{padding:14px;display:flex;flex-direction:column;gap:12px;}
+.smain-hd{display:flex;justify-content:space-between;align-items:center;}
+.smain-title{font-size:14px;font-weight:500;}
+.smain-actions{display:flex;gap:6px;}
+.sa-btn{padding:5px 10px;font-size:11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;display:flex;align-items:center;gap:4px;}
+.sa-btn i{font-size:13px;}
+.sa-btn.prim{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+
+.cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;}
+.cal-day-label{text-align:center;font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-mono);padding:3px 0;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-cell{min-height:52px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:4px;background:var(--color-background-primary);cursor:pointer;transition:background .12s;}
+.cal-cell:hover{background:var(--color-background-secondary);}
+.cal-cell.today{border-color:#7c3aed;}
+.cal-cell.other{background:var(--color-background-secondary);opacity:.5;}
+.cal-num{font-size:10px;color:var(--color-text-tertiary);margin-bottom:3px;font-family:var(--font-mono);}
+.cal-num.today-num{color:#7c3aed;font-weight:500;}
+.cal-event{border-radius:2px;padding:2px 4px;font-size:9px;margin-bottom:2px;white-space:nowrap;overflow:hidden;cursor:pointer;}
+.cal-event.lea{background:#EEEDFE;color:#3C3489;}
+.cal-event.my{background:#E1F5EE;color:#085041;}
+.cal-event.team{background:#E6F1FB;color:#0C447C;}
+.cal-event.learn{background:#FAEEDA;color:#633806;}
+
+.queue-list{display:flex;flex-direction:column;gap:6px;}
+.qi{display:grid;grid-template-columns:36px 1fr auto auto auto;align-items:center;gap:10px;padding:10px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);background:var(--color-background-primary);cursor:pointer;}
+.qi:hover{background:var(--color-background-secondary);}
+.qi-thumb{width:36px;height:64px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.qi-brand-lea{background:#EEEDFE;}
+.qi-brand-my{background:#E1F5EE;}
+.qi-brand-team{background:#E6F1FB;}
+.qi-brand-learn{background:#FAEEDA;}
+.qi-title{font-size:12px;font-weight:500;margin-bottom:3px;}
+.qi-meta{font-size:11px;color:var(--color-text-secondary);}
+.qi-time{font-size:11px;font-family:var(--font-mono);color:var(--color-text-secondary);white-space:nowrap;}
+.qi-platforms{display:flex;gap:3px;}
+.qi-plt{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;border:0.5px solid var(--color-border-tertiary);}
+
+.new-post-modal{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:16px;margin-top:12px;}
+.npm-title{font-size:13px;font-weight:500;margin-bottom:12px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.form-field{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:11px;color:var(--color-text-secondary);}
+.form-field select,.form-field input{font-size:12px;padding:6px 8px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);}
+.plt-toggle{display:flex;gap:6px;flex-wrap:wrap;}
+.plt-chip{padding:5px 10px;border-radius:99px;font-size:11px;border:0.5px solid var(--color-border-secondary);cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);display:flex;align-items:center;gap:4px;}
+.plt-chip.on{background:var(--color-background-info);border-color:var(--color-border-info);color:var(--color-text-info);}
+.plt-chip i{font-size:12px;}
+.best-time-row{display:flex;gap:8px;margin-top:8px;}
+.bt-chip{flex:1;padding:6px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);font-size:11px;text-align:center;cursor:pointer;background:var(--color-background-secondary);}
+.bt-chip.rec{border-color:#7c3aed;background:#EEEDFE;color:#3C3489;}
+.bt-chip .bt-lbl{font-size:9px;color:var(--color-text-tertiary);display:block;margin-bottom:2px;}
+.bt-chip.rec .bt-lbl{color:#534AB7;}
+.bt-chip .bt-time{font-weight:500;font-size:12px;}
+
+.cap-wrap{display:flex;flex-direction:column;gap:0;}
+.cap-toolbar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);}
+.cap-body{display:grid;grid-template-columns:1fr 1fr;min-height:340px;}
+.cap-preview{background:#1a1225;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:12px;border-right:0.5px solid rgba(255,255,255,.08);}
+.phone-frame{width:100px;height:178px;background:#0d0a14;border-radius:10px;border:0.5px solid rgba(255,255,255,.12);display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.pf-vid{flex:1;background:#2d0a1a;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:8px;}
+.caption-overlay{width:86px;border-radius:3px;padding:3px 6px;text-align:center;font-size:7px;font-family:var(--font-mono);line-height:1.4;transition:all .3s;}
+.pf-prog{height:2px;background:rgba(255,255,255,.12);}
+.pf-prog-fill{height:100%;background:#db2777;transition:width .4s;}
+.playback-ctrl{display:flex;align-items:center;gap:8px;}
+.pb-btn{padding:4px 10px;font-size:10px;border-radius:4px;border:0.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.6);cursor:pointer;}
+.pb-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+.cap-panel{padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:340px;}
+.cp-section-title{font-size:11px;font-weight:500;margin-bottom:6px;}
+.style-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.style-opt{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:8px;cursor:pointer;text-align:center;background:var(--color-background-primary);}
+.style-opt.on{border-color:#7c3aed;background:#EEEDFE;}
+.style-opt .so-preview{height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;font-size:8px;}
+.style-opt .so-label{font-size:10px;color:var(--color-text-secondary);}
+.style-opt.on .so-label{color:#3C3489;}
+.slider-row{display:flex;align-items:center;gap:8px;}
+.slider-row label{font-size:11px;color:var(--color-text-secondary);width:60px;flex-shrink:0;}
+.slider-row input{flex:1;}
+.slider-row span{font-size:11px;font-family:var(--font-mono);width:32px;text-align:right;flex-shrink:0;}
+.color-row{display:flex;gap:6px;align-items:center;}
+.color-swatch{width:22px;height:22px;border-radius:4px;cursor:pointer;border:1.5px solid transparent;transition:border .1s;}
+.color-swatch.on{border-color:var(--color-text-primary);}
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
+.lang-btn{padding:5px 4px;font-size:10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);text-align:center;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-secondary);}
+.lang-btn.on{background:#EEEDFE;border-color:#7c3aed;color:#3C3489;}
+.export-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.exp-opt{padding:7px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--color-background-primary);}
+.exp-opt.on{border-color:#7c3aed;background:#EEEDFE;color:#3C3489;}
+.exp-opt i{font-size:14px;}
+
+.transcript-wrap{display:flex;flex-direction:column;}
+.tr-toolbar{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);flex-wrap:wrap;}
+.tr-body{display:grid;grid-template-columns:1fr 280px;min-height:320px;}
+.tr-segments{padding:12px;display:flex;flex-direction:column;gap:3px;overflow-y:auto;max-height:320px;}
+.seg{display:grid;grid-template-columns:52px 1fr auto;gap:8px;align-items:start;padding:7px 8px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid transparent;}
+.seg:hover{background:var(--color-background-secondary);}
+.seg.active{background:#EEEDFE;border-color:#AFA9EC;}
+.seg-time{font-size:10px;font-family:var(--font-mono);color:var(--color-text-tertiary);padding-top:2px;}
+.seg-text{font-size:12px;line-height:1.5;color:var(--color-text-primary);}
+.seg-text.editing{outline:none;border-bottom:1px solid #7c3aed;}
+.seg-acts{display:flex;gap:3px;padding-top:2px;}
+.seg-act{padding:3px 6px;font-size:10px;border:0.5px solid var(--color-border-tertiary);border-radius:3px;background:var(--color-background-primary);cursor:pointer;color:var(--color-text-secondary);}
+.seg-act:hover{border-color:#7c3aed;color:#7c3aed;}
+.tr-side{border-left:0.5px solid var(--color-border-tertiary);padding:12px;display:flex;flex-direction:column;gap:10px;}
+.ts-section-title{font-size:11px;font-weight:500;margin-bottom:5px;}
+.srt-preview{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:8px;font-family:var(--font-mono);font-size:10px;line-height:1.7;color:var(--color-text-secondary);}
+.exp-format-btn{padding:6px 10px;font-size:11px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);cursor:pointer;display:flex;align-items:center;gap:5px;background:var(--color-background-primary);}
+.exp-format-btn:hover{border-color:#7c3aed;color:#7c3aed;}
+.exp-format-btn i{font-size:13px;}
+.safety-row{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--color-background-success);border-radius:var(--border-radius-md);font-size:11px;color:var(--color-text-success);}
+.warn-row{display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--color-background-warning);border-radius:var(--border-radius-md);font-size:11px;color:var(--color-text-warning);}
+</style>
+
+<div class="r">
+
+<div class="nav" role="tablist">
+  <div class="nt on" role="tab" onclick="show(0,this)"><i class="ti ti-calendar" style="font-size:13px;margin-right:4px;" aria-hidden="true"></i>Auto scheduling</div>
+  <div class="nt" role="tab" onclick="show(1,this)"><i class="ti ti-subtask" style="font-size:13px;margin-right:4px;" aria-hidden="true"></i>Auto captions</div>
+  <div class="nt" role="tab" onclick="show(2,this)"><i class="ti ti-writing" style="font-size:13px;margin-right:4px;" aria-hidden="true"></i>Subtitles & export</div>
+</div>
+
+<div id="m0" class="scr">
+  <div class="bar">
+    <div class="dot" style="background:#ff5f57;"></div>
+    <div class="dot" style="background:#febc2e;"></div>
+    <div class="dot" style="background:#28c840;"></div>
+    <div class="url">studio.legali.ai/schedule</div>
+    <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+      <span class="sh">June 2026</span>
+      <select id="sch-view-sel" onchange="setView(this.value)" style="font-size:11px;padding:2px 6px;border-radius:4px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-primary);">
+        <option value="cal">Calendar</option>
+        <option value="queue">Queue</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="split2">
+    <div class="snav">
+      <div class="snav-logo">Legali Studio</div>
+      <div class="snav-item"><i class="ti ti-chart-bar" aria-hidden="true"></i>Analytics</div>
+      <div class="snav-item"><i class="ti ti-cut" aria-hidden="true"></i>Video studio</div>
+      <div class="snav-item"><i class="ti ti-palette" aria-hidden="true"></i>Brand kits</div>
+      <div class="snav-item on"><i class="ti ti-calendar" aria-hidden="true"></i>Schedule</div>
+      <div class="snav-item"><i class="ti ti-send" aria-hidden="true"></i>Publish queue</div>
+    </div>
+    <div class="smain">
+      <div class="smain-hd">
+        <div class="smain-title" id="sch-view-title">Calendar view — June 2026</div>
+        <div class="smain-actions">
+          <button class="sa-btn" onclick="toggleAI()" id="ai-btn"><i class="ti ti-sparkles" aria-hidden="true"></i><span id="ai-btn-label">AI suggest times</span></button>
+          <button class="sa-btn prim" onclick="openNewPost()"><i class="ti ti-plus" aria-hidden="true"></i>Schedule post</button>
+        </div>
+      </div>
+
+      <div id="sch-cal">
+        <div class="cal-head">
+          <div class="cal-day-label">Mon</div><div class="cal-day-label">Tue</div><div class="cal-day-label">Wed</div><div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div><div class="cal-day-label">Sat</div><div class="cal-day-label">Sun</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <div id="sch-queue" style="display:none;">
+        <div class="queue-list" id="queue-list"></div>
+      </div>
+
+      <div id="new-post-form" class="new-post-modal" style="display:none;">
+        <div class="npm-title"><i class="ti ti-calendar-plus" aria-hidden="true" style="font-size:14px;margin-right:5px;"></i>Schedule a post</div>
+        <div class="form-row">
+          <div class="form-field"><div class="form-label">Brand</div>
+            <select id="np-brand" onchange="updateBestTimes()">
+              <option value="lea">Lea by Legali</option>
+              <option value="my">MyLegali</option>
+              <option value="team">TeamLegali</option>
+              <option value="learn">LegaliLearn</option>
+            </select>
+          </div>
+          <div class="form-field"><div class="form-label">Video project</div>
+            <select><option>Awareness hook reel (Jun 8)</option><option>Founder story (Jun 7)</option><option>Is this abuse? reel</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field"><div class="form-label">Date</div><input type="date" id="np-date" value="2026-06-10" onchange="setSchedAnno('date')"/></div>
+          <div class="form-field"><div class="form-label">Time</div><input type="time" id="np-time" value="18:00" onchange="setSchedAnno('time')"/></div>
+        </div>
+        <div class="form-field" style="margin-bottom:10px;">
+          <div class="form-label">Platforms</div>
+          <div class="plt-toggle" id="plt-toggle">
+            <div class="plt-chip on" onclick="togglePlt(this)"><i class="ti ti-brand-instagram" aria-hidden="true"></i>Instagram</div>
+            <div class="plt-chip on" onclick="togglePlt(this)"><i class="ti ti-brand-tiktok" aria-hidden="true"></i>TikTok</div>
+            <div class="plt-chip" onclick="togglePlt(this)"><i class="ti ti-brand-linkedin" aria-hidden="true"></i>LinkedIn</div>
+            <div class="plt-chip" onclick="togglePlt(this)"><i class="ti ti-brand-youtube" aria-hidden="true"></i>YouTube</div>
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:10px;">
+          <div class="form-label"><i class="ti ti-sparkles" aria-hidden="true" style="font-size:11px;color:#7c3aed;margin-right:3px;"></i>AI-recommended times (based on your audience)</div>
+          <div class="best-time-row" id="best-times"></div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn" onclick="closeNewPost()">Cancel</button>
+          <button class="btn pu" onclick="confirmSchedule()"><i class="ti ti-calendar-check" aria-hidden="true" style="font-size:13px;margin-right:4px;"></i>Confirm schedule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="anno">
+    <i class="ti ti-code" aria-hidden="true"></i>
+    <div class="anno-t" id="sch-anno">
+      <strong>API calls:</strong> <code>GET /api/v1/schedule?month=2026-06</code> → returns all scheduled posts. <code>GET /api/v1/schedule/best-times?brand=lea&platforms=instagram,tiktok</code> → Claude analyses last-30d <code>analytics_snapshots</code> audience activity patterns, returns ranked time slots. Stored in <code>scheduled_posts</code> table.
+    </div>
+  </div>
+  <div class="br">
+    <div style="flex:1;display:flex;align-items:center;"><span style="font-size:11px;color:var(--color-text-tertiary);">Click "Schedule post" · toggle AI suggest · switch calendar ↔ queue view</span></div>
+    <button class="btn pu" onclick="show(1,document.querySelectorAll('.nt')[1])">Auto captions <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:13px;margin-left:4px;"></i></button>
+  </div>
+</div>
+
+<div id="m1" class="scr" style="display:none;">
+  <div class="bar">
+    <div class="dot" style="background:#ff5f57;"></div>
+    <div class="dot" style="background:#febc2e;"></div>
+    <div class="dot" style="background:#28c840;"></div>
+    <div class="url">studio.legali.ai/studio/project-4821/captions</div>
+  </div>
+
+  <div class="cap-wrap">
+    <div class="cap-toolbar">
+      <span style="font-size:12px;font-weight:500;">Caption editor</span>
+      <div style="display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;">
+        <button class="sa-btn" onclick="capRegen()"><i class="ti ti-refresh" aria-hidden="true"></i>Regenerate</button>
+        <button class="sa-btn" onclick="capSafety()"><i class="ti ti-shield" aria-hidden="true"></i>Safety check</button>
+        <button class="sa-btn prim" onclick="show(2,document.querySelectorAll('.nt')[2])"><i class="ti ti-download" aria-hidden="true"></i>Export subtitles</button>
+      </div>
+    </div>
+    <div class="cap-body">
+      <div class="cap-preview">
+        <div class="phone-frame">
+          <div class="pf-vid">
+            <div class="caption-overlay" id="cap-overlay" style="background:rgba(61,0,38,.85);color:#ffb3d1;">You might not even realize…</div>
+          </div>
+          <div class="pf-prog"><div class="pf-prog-fill" id="pf-fill" style="width:30%;"></div></div>
+        </div>
+        <div class="playback-ctrl">
+          <button class="pb-btn" onclick="capStyle('word')" id="pb-word">Word by word</button>
+          <button class="pb-btn active" onclick="capStyle('line')" id="pb-line">Line</button>
+          <button class="pb-btn" onclick="capStyle('full')" id="pb-full">Full block</button>
+        </div>
+        <div style="font-size:10px;color:rgba(255,255,255,.3);text-align:center;">Caption style preview</div>
+      </div>
+      <div class="cap-panel">
+        <div>
+          <div class="cp-section-title">Style</div>
+          <div class="style-grid" id="style-grid">
+            <div class="style-opt on" onclick="setCapStyle(this,'word-by-word')">
+              <div class="so-preview" style="background:#2d0a1a;"><span style="background:rgba(219,39,119,.9);color:#fff;padding:2px 5px;border-radius:2px;font-size:7px;">You</span></div>
+              <div class="so-label">Word by word</div>
+            </div>
+            <div class="style-opt" onclick="setCapStyle(this,'line')">
+              <div class="so-preview" style="background:#2d0a1a;"><span style="background:rgba(61,0,38,.85);color:#ffb3d1;padding:2px 5px;border-radius:2px;font-size:6px;">You might not</span></div>
+              <div class="so-label">Line highlight</div>
+            </div>
+            <div class="style-opt" onclick="setCapStyle(this,'full')">
+              <div class="so-preview" style="background:#2d0a1a;flex-direction:column;gap:2px;"><span style="font-size:6px;color:#fff;">You might not even</span><span style="font-size:6px;color:#fff;">realize you're…</span></div>
+              <div class="so-label">Full block</div>
+            </div>
+            <div class="style-opt" onclick="setCapStyle(this,'bounce')">
+              <div class="so-preview" style="background:#2d0a1a;"><span style="color:#c4b5fd;font-size:7px;font-weight:bold;">REALIZE</span></div>
+              <div class="so-label">Bounce pop</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="cp-section-title">Appearance</div>
+          <div class="slider-row" style="margin-bottom:6px;">
+            <label>Font size</label>
+            <input type="range" min="12" max="28" value="18" step="1" oninput="updateFontSize(this.value)" id="font-sz-range"/>
+            <span id="font-sz-out">18px</span>
+          </div>
+          <div class="slider-row">
+            <label>Position</label>
+            <input type="range" min="10" max="90" value="75" step="1" oninput="updatePos(this.value)" id="pos-range"/>
+            <span id="pos-out">75%</span>
+          </div>
+        </div>
+        <div>
+          <div class="cp-section-title">Caption color</div>
+          <div class="color-row" id="color-row">
+            <div class="color-swatch on" style="background:#ffb3d1;" onclick="setColor(this,'#ffb3d1','rgba(61,0,38,.85)')"></div>
+            <div class="color-swatch" style="background:#ffffff;" onclick="setColor(this,'#ffffff','rgba(0,0,0,.7)')"></div>
+            <div class="color-swatch" style="background:#c4b5fd;" onclick="setColor(this,'#c4b5fd','rgba(30,10,60,.85)')"></div>
+            <div class="color-swatch" style="background:#86efac;" onclick="setColor(this,'#86efac','rgba(5,50,20,.85)')"></div>
+            <div class="color-swatch" style="background:#fde68a;" onclick="setColor(this,'#fde68a','rgba(40,30,0,.8)')"></div>
+          </div>
+        </div>
+        <div>
+          <div class="cp-section-title">Language / translation</div>
+          <div class="lang-grid" id="lang-grid">
+            <div class="lang-btn on" onclick="setLang(this,'en')">🇺🇸 English</div>
+            <div class="lang-btn" onclick="setLang(this,'id')">🇮🇩 Bahasa ID</div>
+            <div class="lang-btn" onclick="setLang(this,'es')">🇪🇸 Spanish</div>
+            <div class="lang-btn" onclick="setLang(this,'fr')">🇫🇷 French</div>
+            <div class="lang-btn" onclick="setLang(this,'ar')">🇸🇦 Arabic</div>
+            <div class="lang-btn" onclick="setLang(this,'zh')">🇨🇳 Chinese</div>
+          </div>
+        </div>
+        <div id="safety-status" class="safety-row" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="anno">
+    <i class="ti ti-code" aria-hidden="true"></i>
+    <div class="anno-t" id="cap-anno">
+      <strong>Caption generation:</strong> Whisper v3 transcript → Claude API formats into timed caption segments per style. Stored in <code>video_projects.caption_json [{start_ms, end_ms, text, style}]</code>. <code>POST /api/v1/projects/{id}/captions</code> with <code>{style, font_size, position, color, language}</code>.
+    </div>
+  </div>
+  <div class="br">
+    <button class="btn" onclick="show(0,document.querySelectorAll('.nt')[0])"><i class="ti ti-arrow-left" aria-hidden="true" style="font-size:13px;margin-right:4px;"></i>Scheduling</button>
+    <div style="flex:1;display:flex;align-items:center;padding:0 8px;"><span style="font-size:11px;color:var(--color-text-tertiary);">Try style options · adjust sliders · switch language · run safety check</span></div>
+    <button class="btn pk" onclick="show(2,document.querySelectorAll('.nt')[2])">Subtitles & export <i class="ti ti-arrow-right" aria-hidden="true" style="font-size:13px;margin-left:4px;"></i></button>
+  </div>
+</div>
+
+<div id="m2" class="scr" style="display:none;">
+  <div class="bar">
+    <div class="dot" style="background:#ff5f57;"></div>
+    <div class="dot" style="background:#febc2e;"></div>
+    <div class="dot" style="background:#28c840;"></div>
+    <div class="url">studio.legali.ai/studio/project-4821/subtitles</div>
+  </div>
+
+  <div class="transcript-wrap">
+    <div class="tr-toolbar">
+      <span style="font-size:12px;font-weight:500;">Transcript & subtitle editor</span>
+      <div style="display:flex;gap:5px;margin-left:auto;flex-wrap:wrap;">
+        <button class="sa-btn" onclick="subAutoSync()"><i class="ti ti-clock" aria-hidden="true"></i>Auto-sync timing</button>
+        <button class="sa-btn" onclick="subTranslate()"><i class="ti ti-language" aria-hidden="true"></i>Auto-translate</button>
+        <div style="display:flex;gap:3px;">
+          <span class="tag tag-s" id="sub-lang-badge">EN</span>
+          <span class="tag tag-i" id="sub-trans-badge" style="display:none;">ID</span>
+        </div>
+      </div>
+    </div>
+    <div class="tr-body">
+      <div class="tr-segments" id="seg-list"></div>
+      <div class="tr-side">
+        <div>
+          <div class="ts-section-title">SRT preview</div>
+          <div class="srt-preview" id="srt-preview"></div>
+        </div>
+        <div>
+          <div class="ts-section-title">Export format</div>
+          <div style="display:flex;flex-direction:column;gap:5px;" id="exp-formats">
+            <button class="exp-format-btn on" id="ef-srt" onclick="setExpFmt(this,'SRT')"><i class="ti ti-file-text" aria-hidden="true"></i>.srt — SubRip (universal)</button>
+            <button class="exp-format-btn" id="ef-vtt" onclick="setExpFmt(this,'VTT')"><i class="ti ti-file-text" aria-hidden="true"></i>.vtt — WebVTT (web/YouTube)</button>
+            <button class="exp-format-btn" id="ef-ass" onclick="setExpFmt(this,'ASS')"><i class="ti ti-file-text" aria-hidden="true"></i>.ass — Styled (custom fonts)</button>
+            <button class="exp-format-btn" id="ef-burn" onclick="setExpFmt(this,'BURN')"><i class="ti ti-video" aria-hidden="true"></i>Burn into video (hardcoded)</button>
+          </div>
+        </div>
+        <div>
+          <div class="ts-section-title">Burn-in options</div>
+          <div class="export-grid" id="exp-opts">
+            <div class="exp-opt on" onclick="toggleExpOpt(this)"><i class="ti ti-brand-instagram" aria-hidden="true"></i>9:16 Reels</div>
+            <div class="exp-opt on" onclick="toggleExpOpt(this)"><i class="ti ti-brand-tiktok" aria-hidden="true"></i>9:16 TikTok</div>
+            <div class="exp-opt" onclick="toggleExpOpt(this)"><i class="ti ti-square" aria-hidden="true"></i>1:1 Feed</div>
+            <div class="exp-opt" onclick="toggleExpOpt(this)"><i class="ti ti-brand-linkedin" aria-hidden="true"></i>16:9 LinkedIn</div>
+          </div>
+        </div>
+        <button class="btn pu" onclick="subExport()" style="width:100%;">
+          <i class="ti ti-download" aria-hidden="true" style="font-size:13px;margin-right:4px;"></i>Export subtitles
+        </button>
+        <div id="sub-exported" style="display:none;" class="safety-row">
+          <i class="ti ti-circle-check" aria-hidden="true" style="font-size:14px;"></i>
+          <span id="sub-export-label">Exported project-4821.srt</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="anno">
+    <i class="ti ti-code" aria-hidden="true"></i>
+    <div class="anno-t" id="sub-anno">
+      <strong>Subtitle generation:</strong> Whisper v3 word-level timestamps → stored in <code>video_projects.transcript_json</code>. <code>POST /api/v1/projects/{id}/subtitles/export</code> with <code>{format: "srt", languages: ["en","id"]}</code> → <code>SubtitleWorker</code> renders file, uploads to R2. Returns signed download URL. Burn-in → <code>RenderWorker</code> re-encodes with FFmpeg <code>subtitles</code> filter.
+    </div>
+  </div>
+  <div class="br">
+    <button class="btn" onclick="show(1,document.querySelectorAll('.nt')[1])"><i class="ti ti-arrow-left" aria-hidden="true" style="font-size:13px;margin-right:4px;"></i>Captions</button>
+    <div style="flex:1;display:flex;align-items:center;padding:0 8px;"><span style="font-size:11px;color:var(--color-text-tertiary);">Click segments to edit · auto-sync timing · translate · choose format · export</span></div>
+    <button class="btn pu" onclick="subExport()"><i class="ti ti-circle-check" aria-hidden="true" style="font-size:13px;margin-right:4px;"></i>Export & schedule</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+const MODS = ['m0','m1','m2'];
+const NTS = document.querySelectorAll('.nt');
+function show(i,tab) {
+  MODS.forEach(m => document.getElementById(m).style.display='none');
+  NTS.forEach(t => t.classList.remove('on'));
+  document.getElementById(MODS[i]).style.display='block';
+  tab.classList.add('on');
+}
+
+const EVENTS = [
+  {day:2, brand:'lea', label:'Lea · Awareness reel', time:'18:00'},
+  {day:3, brand:'my', label:'MyLegali · FAQ', time:'12:00'},
+  {day:5, brand:'lea', label:'Lea · Founder story', time:'19:00'},
+  {day:8, brand:'team', label:'Team · Demo', time:'09:00'},
+  {day:10, brand:'learn', label:'Learn · Listicle', time:'17:00'},
+  {day:12, brand:'lea', label:'Lea · UGC reel', time:'18:30'},
+  {day:15, brand:'my', label:'MyLegali · Q&A', time:'11:00'},
+  {day:17, brand:'learn', label:'Learn · Tips', time:'16:00'},
+  {day:19, brand:'lea', label:'Lea · Hook reel', time:'18:00'},
+  {day:22, brand:'team', label:'Team · Feature', time:'09:00'},
+  {day:24, brand:'lea', label:'Lea · Awareness', time:'19:30'},
+  {day:26, brand:'my', label:'MyLegali · Story', time:'12:00'},
+];
+
+let aiSuggest = false;
+const AI_SLOTS = [2,5,8,12,15,19,22,26];
+
+function renderCal() {
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  const firstDay = 1;
+  const totalDays = 30;
+  const offset = 0;
+  for (let i=0;i<offset;i++){
+    const c=document.createElement('div');c.className='cal-cell other';
+    const n=document.createElement('div');n.className='cal-num';n.textContent=31-offset+i;
+    c.appendChild(n);grid.appendChild(c);
+  }
+  for (let d=1;d<=totalDays;d++){
+    const c=document.createElement('div');
+    c.className='cal-cell'+(d===8?' today':'');
+    c.onclick=()=>openNewPostDay(d);
+    const n=document.createElement('div');n.className='cal-num'+(d===8?' today-num':'');n.textContent=d;
+    c.appendChild(n);
+    if (aiSuggest && AI_SLOTS.includes(d)){
+      const ai=document.createElement('div');ai.className='cal-event';
+      ai.style.cssText='background:#EEEDFE;color:#534AB7;border:1px dashed #AFA9EC;';
+      ai.textContent='★ AI: 6pm optimal';c.appendChild(ai);
+    }
+    EVENTS.filter(e=>e.day===d).forEach(ev=>{
+      const ev_el=document.createElement('div');
+      ev_el.className='cal-event '+ev.brand;
+      ev_el.textContent=ev.time+' '+ev.label;
+      ev_el.onclick=(e)=>{e.stopPropagation();selectEvent(ev);};
+      c.appendChild(ev_el);
+    });
+    grid.appendChild(c);
+  }
+}
+
+function selectEvent(ev){
+  document.getElementById('sch-anno').innerHTML='<strong>Scheduled post:</strong> <code>GET /api/v1/schedule/{id}</code> → returns post details. <code>PATCH /api/v1/schedule/{id}</code> to edit time. Platform adapters (Meta API, TikTok API) fire <code>PublishWorker</code> at scheduled UTC time. Status: <span class="tag tag-s">queued</span>';
+}
+
+function setView(v){
+  document.getElementById('sch-cal').style.display=v==='cal'?'block':'none';
+  document.getElementById('sch-queue').style.display=v==='queue'?'block':'none';
+  document.getElementById('sch-view-title').textContent=v==='cal'?'Calendar view — June 2026':'Publish queue';
+  if(v==='queue') renderQueue();
+}
+
+function renderQueue(){
+  const ql=document.getElementById('queue-list');
+  ql.innerHTML='';
+  const sorted=[...EVENTS].sort((a,b)=>a.day-b.day);
+  sorted.forEach((ev,i)=>{
+    const icons={'lea':'🐰','my':'⚖️','team':'💼','learn':'📚'};
+    const plts={'lea':['ig','tt'],'my':['ig','li'],'team':['li'],'learn':['tt','ig']};
+    const pltIcons={'ig':'<i class="ti ti-brand-instagram" aria-hidden="true"></i>','tt':'<i class="ti ti-brand-tiktok" aria-hidden="true"></i>','li':'<i class="ti ti-brand-linkedin" aria-hidden="true"></i>'};
+    const status=ev.day<8?'tag-s">published':ev.day===8?'tag-w">publishing…':'tag-d">scheduled';
+    const el=document.createElement('div');el.className='qi';
+    el.innerHTML=`<div class="qi-thumb qi-brand-${ev.brand}">${icons[ev.brand]}</div>
+    <div><div class="qi-title">${ev.label}</div><div class="qi-meta">Jun ${ev.day}, 2026 · ${ev.time}</div></div>
+    <div class="qi-platforms">${(plts[ev.brand]||[]).map(p=>`<div class="qi-plt">${pltIcons[p]||p}</div>`).join('')}</div>
+    <span class="tag ${status}</span>
+    <button class="seg-act" onclick="editQI(event,${i})"><i class="ti ti-edit" aria-hidden="true" style="font-size:11px;"></i></button>`;
+    ql.appendChild(el);
+  });
+}
+
+function editQI(e,i){
+  e.stopPropagation();
+  document.getElementById('sch-anno').innerHTML='<strong>API call:</strong> <code>PATCH /api/v1/schedule/{id}</code> — update time, platforms, or video. Reschedule triggers <code>PublishWorker</code> re-queue. <code>DELETE /api/v1/schedule/{id}</code> to cancel. Platform-specific format validation runs before save.';
+}
+
+function toggleAI(){
+  aiSuggest=!aiSuggest;
+  document.getElementById('ai-btn-label').textContent=aiSuggest?'AI times on':'AI suggest times';
+  document.getElementById('ai-btn').style.cssText=aiSuggest?'background:#EEEDFE;border-color:#7c3aed;color:#3C3489;':'';
+  document.getElementById('sch-anno').innerHTML=aiSuggest
+    ?'<strong>AI scheduling:</strong> <code>GET /api/v1/schedule/best-times?brand=all&platforms=instagram,tiktok,linkedin</code> → Claude analyses <code>analytics_snapshots.audience_active_pct</code> by hour/day, returns ranked slots per brand. Displayed as dashed overlays on calendar.'
+    :'<strong>API calls:</strong> <code>GET /api/v1/schedule?month=2026-06</code> → returns all scheduled posts. <code>GET /api/v1/schedule/best-times</code> → AI-ranked optimal posting times per brand/platform.';
+  renderCal();
+}
+
+let newPostOpen=false;
+function openNewPost(){
+  newPostOpen=!newPostOpen;
+  document.getElementById('new-post-form').style.display=newPostOpen?'block':'none';
+  if(newPostOpen){updateBestTimes();setSchedAnno('open');}
+}
+function openNewPostDay(d){
+  document.getElementById('np-date').value='2026-06-'+String(d).padStart(2,'0');
+  openNewPost();
+}
+function closeNewPost(){newPostOpen=false;document.getElementById('new-post-form').style.display='none';}
+
+const BEST_TIMES={
+  lea:[{t:'6:00 PM',lbl:'Best for Lea',rec:true},{t:'7:30 PM',lbl:'2nd best',rec:false},{t:'12:00 PM',lbl:'Lunch peak',rec:false}],
+  my:[{t:'12:00 PM',lbl:'Best overall',rec:true},{t:'9:00 AM',lbl:'Morning',rec:false},{t:'5:00 PM',lbl:'After work',rec:false}],
+  team:[{t:'9:00 AM',lbl:'Best for LinkedIn',rec:true},{t:'12:00 PM',lbl:'Lunch',rec:false},{t:'4:00 PM',lbl:'Afternoon',rec:false}],
+  learn:[{t:'5:00 PM',lbl:'Best for TikTok',rec:true},{t:'8:00 PM',lbl:'Evening',rec:false},{t:'3:00 PM',lbl:'After school',rec:false}],
+};
+function updateBestTimes(){
+  const brand=document.getElementById('np-brand').value;
+  const times=BEST_TIMES[brand]||BEST_TIMES.lea;
+  const container=document.getElementById('best-times');
+  container.innerHTML='';
+  times.forEach(t=>{
+    const el=document.createElement('div');
+    el.className='bt-chip'+(t.rec?' rec':'');
+    el.innerHTML=`<span class="bt-lbl">${t.lbl}${t.rec?' ★':''}</span><span class="bt-time">${t.t}</span>`;
+    el.onclick=()=>{document.getElementById('np-time').value=t.t.replace(' PM','').replace(' AM','').replace(':','').replace('0 ','0').trim();};
+    container.appendChild(el);
+  });
+}
+function togglePlt(el){el.classList.toggle('on');setSchedAnno('platform');}
+function setSchedAnno(type){
+  const msgs={
+    open:'<strong>API call:</strong> <code>POST /api/v1/schedule</code> — body: <code>{project_id, brand_kit_id, scheduled_at, platforms[], caption_overrides{}}</code>. Each platform gets format-specific caption (Instagram ≤2200 chars + hashtags, TikTok ≤150 chars, LinkedIn ≤3000 chars). Stored in <code>scheduled_posts</code>.',
+    platform:'<strong>Platform adapters:</strong> Meta Graph API (<code>POST /v19.0/{ig-user-id}/media</code> + <code>/media_publish</code>), TikTok Direct Post API (<code>POST /v2/post/publish/video/init/</code>), LinkedIn Videos API (<code>POST /v2/assets?action=registerUpload</code>). Each adapter validates format constraints before scheduling.',
+    date:'<strong>Scheduling engine:</strong> <code>scheduled_at</code> stored as UTC in <code>scheduled_posts</code>. <code>PublishWorker</code> (Celery beat) polls every 5min, fires platform adapters within ±2min of target time. Failed publish → retry 3× with exponential backoff, then alert Ira via email.',
+    time:'<strong>Timezone:</strong> UI shows user\'s local time (SF / PT). Stored as UTC. <code>PublishWorker</code> converts back to platform-required timezone per API spec.'
+  };
+  document.getElementById('sch-anno').innerHTML=msgs[type]||msgs.open;
+}
+function confirmSchedule(){
+  closeNewPost();
+  document.getElementById('sch-anno').innerHTML='<strong>Scheduled:</strong> <code>POST /api/v1/schedule</code> → <span class="tag tag-s">201 Created</span>. <code>PublishWorker</code> queued for selected date/time. Platform caption variants auto-generated per character limits. Calendar refreshes via <code>GET /api/v1/schedule?month=2026-06</code>.';
+  renderCal();
+}
+renderCal();
+
+const CAP_STYLES={
+  'word-by-word':{text:'You',bg:'rgba(219,39,119,.9)',color:'#fff',anno:'Style: <code>word_by_word</code> — Whisper word-level timestamps render each word individually. Highest engagement for hook moments. FFmpeg filter: <code>subtitles=file.ass:force_style=\'MarginV=15\'</code> with per-word <code>{\an8}</code> tags.'},
+  line:{text:'You might not even…',bg:'rgba(61,0,38,.85)',color:'#ffb3d1',anno:'Style: <code>line_highlight</code> — sentence-level segments from Whisper transcript. One line displayed at a time, fades on change. Stored as <code>caption_json[{start_ms,end_ms,text}]</code> in <code>video_projects</code>.'},
+  full:{text:'You might not\neven realize…',bg:'rgba(0,0,0,.6)',color:'#ffffff',anno:'Style: <code>full_block</code> — 2–3 lines shown simultaneously. Classic subtitle look. Best for accessibility and LinkedIn. Rendered via <code>subtitles</code> FFmpeg filter or Remotion <code>Sequence</code> component.'},
+  bounce:{text:'REALIZE',bg:'transparent',color:'#c4b5fd',anno:'Style: <code>bounce_pop</code> — key word extracted by Claude from each segment, rendered with CSS keyframe scale animation in Remotion. Exported as burned-in video only (no SRT equivalent). Best for TikTok.'},
+};
+let capStyleKey='word-by-word';
+function setCapStyle(el,style){
+  document.querySelectorAll('.style-opt').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  capStyleKey=style;
+  const s=CAP_STYLES[style];
+  updateCapOverlay(s.text,s.bg,s.color);
+  document.getElementById('cap-anno').innerHTML='<strong>'+s.anno+'</strong>';
+}
+function capStyle(mode){
+  const map={'word':'word-by-word','line':'line','full':'full'};
+  document.querySelectorAll('.pb-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  const style=map[mode]||'line';
+  const el=document.querySelector('.style-opt:nth-child('+(Object.keys(CAP_STYLES).indexOf(style)+1)+')');
+  if(el) setCapStyle(el,style);
+}
+function updateCapOverlay(text,bg,color){
+  const ov=document.getElementById('cap-overlay');
+  ov.textContent=text;ov.style.background=bg;ov.style.color=color;
+}
+function updateFontSize(v){document.getElementById('font-sz-out').textContent=v+'px';document.getElementById('cap-anno').innerHTML='<strong>API:</strong> <code>PATCH /api/v1/projects/{id}/captions</code> — <code>{font_size:'+v+'}</code>. Stored in <code>caption_config</code> JSONB field. Applied at render time via Remotion <code>AbsoluteFill</code> text layer.';}
+function updatePos(v){document.getElementById('pos-out').textContent=v+'%';document.getElementById('cap-anno').innerHTML='<strong>API:</strong> <code>PATCH /api/v1/projects/{id}/captions</code> — <code>{position_pct:'+v+'}</code>. Maps to FFmpeg <code>y=(h*'+v/100+')-(text_h/2)</code> for burn-in, or Remotion <code>top</code> style prop for preview.';}
+function setColor(el,color,bg){
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  const s=CAP_STYLES[capStyleKey];
+  updateCapOverlay(s.text,bg,color);
+  document.getElementById('cap-anno').innerHTML='<strong>API:</strong> <code>PATCH /api/v1/projects/{id}/captions</code> — <code>{text_color:"'+color+'", bg_color:"'+bg+'"}</code>. Brand kit default colors pre-applied. User override stored per-project.';
+}
+const LANG_CAPTIONS={
+  en:'You might not even realize…',
+  id:'Mungkin kamu bahkan tidak menyadari…',
+  es:'Puede que ni siquiera te des cuenta…',
+  fr:"Tu ne t'en rends peut-être pas compte…",
+  ar:'ربما لا تدرك حتى…',
+  zh:'你甚至可能没有意识到…'
+};
+function setLang(el,lang){
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const s=CAP_STYLES[capStyleKey];
+  updateCapOverlay(LANG_CAPTIONS[lang]||s.text,s.bg,s.color);
+  document.getElementById('cap-anno').innerHTML='<strong>Translation:</strong> <code>POST /api/v1/projects/{id}/captions/translate</code> — <code>{target_language:"'+lang+'"}</code>. Calls Claude API with full transcript, returns translated segments preserving timing. Stored as separate <code>caption_languages</code> row. Bilingual export (EN + '+lang.toUpperCase()+') available for SRT.';
+}
+function capRegen(){document.getElementById('cap-anno').innerHTML='<strong>Regenerate:</strong> <code>POST /api/v1/projects/{id}/captions/generate</code> — re-runs Claude caption prompt with brand kit voice context. Replaces existing <code>caption_json</code>. Safety check auto-runs on Lea brand before saving.';}
+function capSafety(){
+  const el=document.getElementById('safety-status');
+  el.style.display='flex';
+  el.className='safety-row';
+  el.innerHTML='<i class="ti ti-shield-check" aria-hidden="true" style="font-size:14px;"></i> Trauma-informed safety check passed — no flagged phrases detected.';
+  document.getElementById('cap-anno').innerHTML='<strong>Safety check:</strong> <code>POST /api/v1/projects/{id}/captions/safety-check</code> → Claude API trauma-informed pass. Returns <code>{passed:true, flags:[], revised_text:null}</code>. Required before any Lea brand export or schedule action.';
+}
+
+const SEGMENTS=[
+  {start:'0:00.000',end:'0:03.200',text:'You might not even realize you\'re in a coercive relationship.'},
+  {start:'0:03.200',end:'0:07.100',text:'Coercive control is one of the most common — and least recognized — forms of abuse.'},
+  {start:'0:07.100',end:'0:11.400',text:'It doesn\'t always look like physical violence.'},
+  {start:'0:11.400',end:'0:16.200',text:'It can be controlling your money, your time, your friendships.'},
+  {start:'0:16.200',end:'0:21.000',text:'Lea by Legali helps you identify what\'s happening and understand your legal options.'},
+  {start:'0:21.000',end:'0:26.500',text:'You don\'t have to navigate this alone. Join the waitlist at lea.legali.ai.'},
+];
+let activeSeg=-1;
+let expFmt='SRT';
+
+function renderSegments(){
+  const list=document.getElementById('seg-list');
+  list.innerHTML='';
+  SEGMENTS.forEach((s,i)=>{
+    const el=document.createElement('div');
+    el.className='seg'+(i===activeSeg?' active':'');
+    el.id='seg-'+i;
+    el.innerHTML=`<div class="seg-time">${s.start}</div>
+    <div class="seg-text" id="seg-text-${i}" ${i===activeSeg?'contenteditable="true" class="seg-text editing"':''}>${s.text}</div>
+    <div class="seg-acts">
+      <button class="seg-act" onclick="editSeg(event,${i})"><i class="ti ti-edit" aria-hidden="true" style="font-size:10px;"></i></button>
+      <button class="seg-act" onclick="splitSeg(event,${i})">split</button>
+    </div>`;
+    el.onclick=()=>selectSeg(i);
+    list.appendChild(el);
+  });
+  renderSRT();
+}
+
+function selectSeg(i){
+  activeSeg=i;
+  renderSegments();
+  document.getElementById('sub-anno').innerHTML='<strong>Segment selected:</strong> <code>PATCH /api/v1/projects/{id}/transcript/segments/'+i+'</code> — inline edit updates <code>transcript_json['+i+'].text</code>. Timing auto-recalculated via Whisper word-level alignment. Changes propagate to SRT/VTT export and caption overlay.';
+}
+function editSeg(e,i){e.stopPropagation();activeSeg=i;renderSegments();const el=document.getElementById('seg-text-'+i);if(el){el.setAttribute('contenteditable','true');el.className='seg-text editing';el.focus();}}
+function splitSeg(e,i){e.stopPropagation();document.getElementById('sub-anno').innerHTML='<strong>Split segment:</strong> <code>POST /api/v1/projects/{id}/transcript/segments/'+i+'/split</code> — splits at playhead position. Whisper re-aligns timing on both halves. Creates two rows in <code>transcript_json</code>.';}
+
+function renderSRT(){
+  const pre=document.getElementById('srt-preview');
+  const shown=SEGMENTS.slice(0,3);
+  pre.textContent=shown.map((s,i)=>`${i+1}\n${s.start.replace('.',',')} --> ${s.end.replace('.',',')}\n${s.text.substring(0,50)}…`).join('\n\n');
+}
+
+function setExpFmt(el,fmt){
+  expFmt=fmt;
+  document.querySelectorAll('.exp-format-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const msgs={
+    SRT:'<strong>SRT export:</strong> <code>POST /api/v1/projects/{id}/subtitles/export</code> — <code>{format:"srt"}</code>. SubtitleWorker generates standard SubRip file. Compatible with Instagram, TikTok, YouTube, VLC. Supports multilingual (one file per language).',
+    VTT:'<strong>VTT export:</strong> <code>POST /api/v1/projects/{id}/subtitles/export</code> — <code>{format:"vtt"}</code>. WebVTT supports styling cues (<code>::cue</code>) and chapter markers. Native format for YouTube auto-captions and HTML5 <code><track></code> element.',
+    ASS:'<strong>ASS export:</strong> Advanced SubStation Alpha — preserves custom fonts (Quicksand), colors (#ffb3d1), and position. Required for Lea brand-styled subtitles. FFmpeg renders via <code>ass=file.ass</code> filter. Heavier file size (~3× SRT).',
+    BURN:'<strong>Burn-in:</strong> <code>POST /api/v1/projects/{id}/subtitles/export</code> — <code>{format:"burn_in", aspect_ratios:["9:16","1:1"]}</code>. RenderWorker re-encodes with FFmpeg <code>subtitles</code> filter. Hardcoded into pixel data — no separate file. Required for Stories/Reels (no external subtitle support).',
+  };
+  document.getElementById('sub-anno').innerHTML=msgs[fmt]||msgs.SRT;
+}
+
+function toggleExpOpt(el){el.classList.toggle('on');}
+
+function subAutoSync(){
+  document.getElementById('sub-anno').innerHTML='<strong>Auto-sync:</strong> <code>POST /api/v1/projects/{id}/transcript/sync</code> — re-aligns all segment timestamps against audio waveform using Whisper forced alignment. Useful after manual text edits that shift timing. Takes ~10s for 60s video.';
+}
+function subTranslate(){
+  document.getElementById('sub-lang-badge').style.display='inline-block';
+  document.getElementById('sub-trans-badge').style.display='inline-block';
+  document.getElementById('sub-anno').innerHTML='<strong>Auto-translate:</strong> <code>POST /api/v1/projects/{id}/subtitles/translate</code> — <code>{from:"en",to:["id","es"]}</code>. Claude API translates each segment preserving line breaks and timing. Returns parallel <code>caption_languages</code> rows. Bilingual SRT packs both languages in one file.';
+}
+function subExport(){
+  document.getElementById('sub-exported').style.display='flex';
+  const labels={SRT:'project-4821.srt',VTT:'project-4821.vtt',ASS:'project-4821.ass',BURN:'Rendering burned-in video…'};
+  document.getElementById('sub-export-label').textContent='Exported '+labels[expFmt];
+  document.getElementById('sub-anno').innerHTML='<strong>Export complete:</strong> File uploaded to R2, signed URL returned. <code>video_projects.subtitle_urls</code> updated with <code>{format:"'+expFmt+'", url:"...", languages:["en","id"]}</code>. If scheduling is active, SRT auto-attached to <code>scheduled_posts</code> platform upload payload.';
+}
+
+renderSegments();
+updateBestTimes();
+</script>

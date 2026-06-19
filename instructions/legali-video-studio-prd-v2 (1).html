@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD v2 — Legali Video Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f0c10;--paper:#faf8f5;--surface:#ffffff;
+  --accent:#7c3aed;--accent2:#db2777;--accent3:#0891b2;
+  --muted:#6b6575;--rule:#e2ddd9;
+  --tag-bg:#f3f0ff;--tag-text:#5b21b6;
+  --success:#059669;--warn:#d97706;--danger:#dc2626;
+  --shadow:0 2px 24px rgba(15,12,16,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);line-height:1.7;font-size:15px;}
+
+/* COVER */
+.cover{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;position:relative;overflow:hidden;background:var(--ink);color:var(--paper);}
+.cover-noise{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;}
+.cover-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(124,58,237,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,.08) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;}
+.cover-glow{position:absolute;top:-20%;left:60%;width:600px;height:600px;background:radial-gradient(circle,rgba(124,58,237,.35) 0%,transparent 65%);pointer-events:none;}
+.cover-glow2{position:absolute;bottom:-10%;right:-5%;width:400px;height:400px;background:radial-gradient(circle,rgba(219,39,119,.2) 0%,transparent 65%);pointer-events:none;}
+.cover-header{position:relative;display:flex;justify-content:space-between;align-items:center;padding:2rem 3.5rem;border-bottom:1px solid rgba(255,255,255,.07);}
+.cover-logo{font-family:'DM Mono',monospace;font-weight:500;font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.cover-meta{font-family:'DM Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.35);text-align:right;}
+.cover-body{position:relative;display:flex;flex-direction:column;justify-content:center;padding:4rem 3.5rem;}
+.cover-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);border-radius:100px;padding:.35rem 1rem;font-size:.72rem;font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#c4b5fd;margin-bottom:2rem;width:fit-content;}
+.cover-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#c4b5fd;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.cover-title{font-family:'Playfair Display',serif;font-size:clamp(3rem,7vw,6rem);font-weight:900;line-height:1.0;letter-spacing:-.02em;max-width:800px;margin-bottom:1.5rem;}
+.cover-title em{font-style:italic;color:#c4b5fd;}
+.cover-subtitle{font-size:1.1rem;color:rgba(255,255,255,.55);max-width:540px;margin-bottom:3rem;font-weight:300;}
+.cover-pills{display:flex;flex-wrap:wrap;gap:.6rem;}
+.cover-pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:.4rem .9rem;font-size:.78rem;color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;}
+.cover-footer{position:relative;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.07);}
+.stat-block{padding:1.8rem 2.5rem;border-right:1px solid rgba(255,255,255,.07);}
+.stat-block:last-child{border-right:none;}
+.stat-num{font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:#fff;display:block;margin-bottom:.2rem;}
+.stat-label{font-size:.72rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;font-family:'DM Mono',monospace;}
+
+/* LAYOUT */
+.doc{max-width:980px;margin:0 auto;padding:5rem 3rem;}
+
+/* SECTION */
+.section-label{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--rule);}
+h1.section-title{font-family:'Playfair Display',serif;font-size:2.4rem;font-weight:700;line-height:1.2;margin-bottom:1.2rem;letter-spacing:-.01em;}
+h2.sub-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin:2.5rem 0 .8rem;letter-spacing:-.01em;}
+h3.sub-sub{font-size:.85rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:1.8rem 0 .5rem;font-family:'DM Mono',monospace;}
+p{margin-bottom:.9rem;color:#2d2835;}
+.divider{border:none;border-top:1px solid var(--rule);margin:4rem 0;}
+
+/* CARDS */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.2rem;margin:1.5rem 0;}
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:1.6rem;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.card.purple::before{background:var(--accent);}
+.card.pink::before{background:var(--accent2);}
+.card.blue::before{background:var(--accent3);}
+.card.green::before{background:var(--success);}
+.card.amber::before{background:var(--warn);}
+.card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:1rem;}
+.card.purple .card-icon{background:#f3f0ff;}.card.pink .card-icon{background:#fdf2f8;}.card.blue .card-icon{background:#ecfeff;}.card.green .card-icon{background:#ecfdf5;}.card.amber .card-icon{background:#fffbeb;}
+.card-title{font-weight:600;font-size:.95rem;margin-bottom:.4rem;}
+.card-desc{font-size:.83rem;color:var(--muted);line-height:1.5;margin:0;}
+
+/* TABLES */
+.prd-table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.84rem;}
+.prd-table th{background:var(--ink);color:var(--paper);padding:.7rem 1rem;text-align:left;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;}
+.prd-table th:first-child{border-radius:8px 0 0 0;}.prd-table th:last-child{border-radius:0 8px 0 0;}
+.prd-table td{padding:.75rem 1rem;border-bottom:1px solid var(--rule);vertical-align:top;}
+.prd-table tr:last-child td{border-bottom:none;}
+.prd-table tr:nth-child(even) td{background:#fdfcfb;}
+
+/* TAGS */
+.tag{display:inline-block;padding:.2rem .6rem;border-radius:4px;font-size:.7rem;font-weight:500;font-family:'DM Mono',monospace;}
+.tag-p0{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.tag-p1{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.tag-p2{background:#fefce8;color:#a16207;border:1px solid #fde68a;}
+.tag-feature{background:var(--tag-bg);color:var(--tag-text);border:1px solid #ddd6fe;}
+.tag-infra{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;}
+.tag-ux{background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;}
+.tag-new{background:#fdf4ff;color:#7e22ce;border:1px solid #e9d5ff;}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:2rem;margin:1.5rem 0;}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent),var(--accent2));border-radius:2px;}
+.tl-item{position:relative;margin-bottom:2rem;}
+.tl-dot{position:absolute;left:-2rem;top:4px;width:16px;height:16px;border-radius:50%;background:var(--surface);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;}
+.tl-dot.pink{border-color:var(--accent2);}.tl-dot.blue{border-color:var(--accent3);}.tl-dot.green{border-color:var(--success);}
+.tl-dot::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);}
+.tl-dot.pink::after{background:var(--accent2);}.tl-dot.blue::after{background:var(--accent3);}.tl-dot.green::after{background:var(--success);}
+.tl-phase{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem;}
+.tl-phase.pink{color:var(--accent2);}.tl-phase.blue{color:var(--accent3);}.tl-phase.green{color:var(--success);}
+.tl-title{font-weight:600;font-size:1rem;margin-bottom:.3rem;}
+.tl-desc{font-size:.83rem;color:var(--muted);margin:0;}
+
+/* METRICS */
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin:1.5rem 0;}
+.metric-box{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:1.2rem;text-align:center;box-shadow:var(--shadow);}
+.metric-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;line-height:1;margin-bottom:.3rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.metric-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:'DM Mono',monospace;}
+
+/* CALLOUT */
+.callout{border-left:3px solid var(--accent);background:var(--tag-bg);border-radius:0 8px 8px 0;padding:1rem 1.4rem;margin:1.5rem 0;font-size:.88rem;color:#3b1f8a;}
+.callout.pink{border-color:var(--accent2);background:#fdf2f8;color:#7c124e;}
+.callout.blue{border-color:var(--accent3);background:#ecfeff;color:#0c4a6e;}
+.callout.green{border-color:var(--success);background:#ecfdf5;color:#065f46;}
+.callout strong{font-weight:600;}
+
+/* LISTS */
+ul.prd-list{list-style:none;margin:.8rem 0 1rem;padding:0;}
+ul.prd-list li{padding:.4rem 0 .4rem 1.4rem;position:relative;font-size:.88rem;color:#2d2835;border-bottom:1px solid #f5f3f0;}
+ul.prd-list li:last-child{border-bottom:none;}
+ul.prd-list li::before{content:'→';position:absolute;left:0;color:var(--accent);font-size:.75rem;top:.45rem;}
+
+/* STORY BOX */
+.story-box{background:linear-gradient(135deg,#0f0c10 0%,#1e1427 100%);color:var(--paper);border-radius:12px;padding:2rem;margin:1.5rem 0;font-size:.9rem;line-height:1.6;position:relative;overflow:hidden;}
+.story-box::before{content:'"';position:absolute;top:-.5rem;left:1rem;font-family:'Playfair Display',serif;font-size:8rem;color:rgba(124,58,237,.15);line-height:1;}
+.story-box p{color:rgba(255,255,255,.8);margin:0;}
+.story-box .story-attr{margin-top:.8rem;font-size:.75rem;font-family:'DM Mono',monospace;color:rgba(255,255,255,.35);}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:2rem 2.5rem;margin:2rem 0;box-shadow:var(--shadow);}
+.toc-title{font-family:'DM Mono',monospace;font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:1rem;}
+.toc ol{padding-left:1.2rem;list-style:decimal;}
+.toc li{padding:.25rem 0;font-size:.88rem;color:var(--ink);}
+.toc li a{text-decoration:none;color:inherit;display:flex;justify-content:space-between;align-items:baseline;}
+.toc li a:hover{color:var(--accent);}
+.toc li a::after{content:'';flex:1;margin:0 .5rem;border-bottom:1px dotted var(--rule);}
+.toc .toc-pg{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);flex-shrink:0;}
+.toc .toc-new{font-family:'DM Mono',monospace;font-size:.65rem;background:#fdf4ff;color:#7e22ce;border:1px solid #e9d5ff;padding:.1rem .4rem;border-radius:3px;margin-left:.4rem;flex-shrink:0;}
+
+/* ARCH BOX */
+.arch-box{background:var(--ink);border-radius:12px;padding:2rem;font-family:'DM Mono',monospace;font-size:.75rem;line-height:1.9;color:#e2e8f0;overflow-x:auto;margin:1.5rem 0;}
+.arch-box .hl{color:#c4b5fd;}.arch-box .hl2{color:#f9a8d4;}.arch-box .hl3{color:#67e8f9;}.arch-box .dim{color:#4a5568;}.arch-box .gr{color:#86efac;}
+
+/* MOCKUP FRAMES */
+.mockup-frame{background:var(--surface);border:1px solid var(--rule);border-radius:16px;overflow:hidden;margin:2rem 0;box-shadow:var(--shadow);}
+.mockup-titlebar{background:#f5f3f0;border-bottom:1px solid var(--rule);padding:.6rem 1rem;display:flex;align-items:center;gap:.5rem;}
+.mockup-dot{width:10px;height:10px;border-radius:50%;}
+.mockup-url{flex:1;background:var(--rule);border-radius:4px;height:20px;margin:0 .8rem;display:flex;align-items:center;padding:0 .6rem;font-size:.7rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.mockup-body{padding:0;}
+
+/* SCREEN MOCKUP — ANALYTICS */
+.analytics-shell{display:grid;grid-template-columns:200px 1fr;min-height:460px;font-size:.8rem;}
+.analytics-nav{background:#faf8f5;border-right:1px solid var(--rule);padding:1.2rem .8rem;display:flex;flex-direction:column;gap:.3rem;}
+.analytics-nav .nav-brand{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:1rem;padding:.4rem .6rem;}
+.nav-item{padding:.5rem .7rem;border-radius:6px;cursor:pointer;color:var(--muted);font-size:.78rem;display:flex;align-items:center;gap:.5rem;}
+.nav-item.active{background:var(--tag-bg);color:var(--accent);font-weight:600;}
+.nav-item .nav-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.5;flex-shrink:0;}
+.analytics-main{padding:1.4rem;}
+.analytics-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;}
+.analytics-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;}
+.analytics-controls{display:flex;gap:.4rem;}
+.ctrl-btn{padding:.3rem .7rem;border:1px solid var(--rule);border-radius:5px;font-size:.72rem;color:var(--muted);background:var(--surface);cursor:pointer;}
+.ctrl-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin-bottom:1.2rem;}
+.kpi-card{background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:.8rem;}
+.kpi-val{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--ink);}
+.kpi-label{font-size:.68rem;color:var(--muted);margin-top:.1rem;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.06em;}
+.kpi-delta{font-size:.68rem;color:var(--success);font-family:'DM Mono',monospace;margin-top:.15rem;}
+.chart-placeholder{background:#f9f7f4;border:1px solid var(--rule);border-radius:8px;height:110px;display:flex;align-items:flex-end;padding:.6rem;gap:.4rem;overflow:hidden;}
+.bar{border-radius:3px 3px 0 0;flex:1;opacity:.85;}
+.insight-strip{margin-top:1rem;background:linear-gradient(135deg,#1e0a3c,#2d1458);border-radius:8px;padding:.8rem 1rem;color:#e9d5ff;font-size:.75rem;line-height:1.6;}
+.insight-label{font-family:'DM Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:#c4b5fd;margin-bottom:.3rem;}
+
+/* SCREEN MOCKUP — STUDIO */
+.studio-shell{display:grid;grid-template-rows:44px 1fr 140px;min-height:500px;}
+.studio-toolbar{background:#1a1625;border-bottom:1px solid #2d2040;display:flex;align-items:center;padding:0 1rem;gap:.6rem;}
+.tb-logo{font-family:'Playfair Display',serif;font-size:.85rem;color:#fff;margin-right:.5rem;}
+.tb-btn{padding:.25rem .65rem;border-radius:4px;font-size:.7rem;color:rgba(255,255,255,.55);background:transparent;cursor:pointer;}
+.tb-btn.primary{background:var(--accent);color:#fff;}
+.tb-brand-pill{display:flex;align-items:center;gap:.35rem;background:rgba(219,39,119,.15);border:1px solid rgba(219,39,119,.3);border-radius:99px;padding:.2rem .7rem;font-size:.68rem;color:#f9a8d4;margin-left:auto;}
+.tb-brand-dot{width:6px;height:6px;border-radius:50%;background:#db2777;}
+.studio-canvas{display:grid;grid-template-columns:1fr 260px;background:#0d0a14;}
+.canvas-preview{display:flex;align-items:center;justify-content:center;padding:1.5rem;position:relative;}
+.video-frame{width:120px;height:213px;background:#1a1225;border-radius:10px;border:1px solid #2d2040;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.vf-bg{flex:1;background:linear-gradient(160deg,#3d0026 0%,#1a0010 100%);display:flex;align-items:center;justify-content:center;}
+.vf-play{width:28px;height:28px;background:rgba(255,107,157,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.vf-caption{background:#3d0026;padding:.4rem .5rem;font-size:.55rem;color:#f9a8d4;font-family:'DM Mono',monospace;text-align:center;}
+.vf-badge{position:absolute;top:.5rem;left:.5rem;background:rgba(219,39,119,.8);border-radius:3px;font-size:.5rem;color:#fff;padding:.1rem .3rem;font-family:'DM Mono',monospace;}
+.candidate-strip{display:flex;flex-direction:column;gap:.5rem;padding:.5rem;position:absolute;right:1.5rem;}
+.cand-thumb{width:44px;height:78px;background:#1a1225;border-radius:5px;border:1px solid #2d2040;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;}
+.cand-thumb.selected{border-color:var(--accent);}
+.studio-panel{background:#120f1d;border-left:1px solid #2d2040;padding:1rem;overflow-y:auto;}
+.panel-section{margin-bottom:1rem;}
+.panel-label{font-family:'DM Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:.5rem;}
+.panel-item{display:flex;justify-content:space-between;align-items:center;padding:.35rem 0;border-bottom:1px solid #1e1a2e;font-size:.72rem;color:rgba(255,255,255,.65);}
+.panel-item:last-child{border-bottom:none;}
+.panel-val{font-family:'DM Mono',monospace;color:#c4b5fd;font-size:.68rem;}
+.voice-row{display:flex;gap:.3rem;margin-top:.4rem;}
+.voice-btn{flex:1;padding:.3rem;border-radius:4px;font-size:.62rem;text-align:center;cursor:pointer;}
+.voice-btn.active{background:rgba(124,58,237,.25);border:1px solid rgba(124,58,237,.5);color:#c4b5fd;}
+.voice-btn.idle{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);}
+.score-bar-bg{height:4px;background:rgba(255,255,255,.08);border-radius:99px;margin-top:.25rem;}
+.score-bar-fill{height:100%;border-radius:99px;}
+.studio-timeline{background:#0a0812;border-top:1px solid #2d2040;padding:.6rem 1rem;display:flex;flex-direction:column;gap:.4rem;}
+.tl-track-label{font-family:'DM Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;width:52px;flex-shrink:0;}
+.tl-track{display:flex;align-items:center;gap:.4rem;height:24px;}
+.tl-clips{flex:1;display:flex;gap:2px;height:100%;}
+.tl-clip{border-radius:3px;height:100%;display:flex;align-items:center;padding:0 .3rem;font-size:.52rem;color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;overflow:hidden;}
+
+/* SCREEN — BRAND ONBOARDING */
+.onboard-shell{display:grid;grid-template-columns:220px 1fr;min-height:460px;}
+.ob-sidebar{background:#f9f7f4;border-right:1px solid var(--rule);padding:1.4rem 1rem;display:flex;flex-direction:column;}
+.ob-brand-label{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;}
+.ob-brand-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:.2rem;}
+.ob-brand-sub{font-size:.75rem;color:var(--muted);margin-bottom:.8rem;}
+.ob-pbar-bg{height:3px;background:var(--rule);border-radius:99px;margin-bottom:.3rem;}
+.ob-pbar-fill{height:100%;background:#5B9CF6;border-radius:99px;width:57%;}
+.ob-pmeta{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-bottom:1rem;font-family:'DM Mono',monospace;}
+.ob-steps{display:flex;flex-direction:column;gap:.35rem;}
+.ob-step{display:flex;align-items:center;gap:.6rem;padding:.55rem .7rem;border-radius:6px;border:0.5px solid transparent;}
+.ob-step.active{background:var(--surface);border-color:var(--rule);}
+.ob-step-dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--rule);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--surface);}
+.ob-step.done .ob-step-dot{background:#5B9CF6;border-color:#5B9CF6;}
+.ob-step.active .ob-step-dot{background:#5B9CF6;border-color:#5B9CF6;}
+.ob-step-dot-inner{width:6px;height:6px;border-radius:50%;background:#fff;}
+.ob-step-label{font-size:.78rem;font-weight:600;color:var(--ink);}
+.ob-step-status{font-size:.68rem;color:var(--muted);}
+.ob-main{display:flex;flex-direction:column;}
+.ob-topbar{display:flex;align-items:center;justify-content:flex-end;padding:.6rem 1rem;border-bottom:1px solid var(--rule);gap:.8rem;}
+.ob-topbar-bar{flex:1;max-width:280px;height:3px;background:var(--rule);border-radius:99px;}
+.ob-topbar-fill{height:100%;background:#5B9CF6;border-radius:99px;width:57%;}
+.ob-pct{font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;}
+.ob-messages{flex:1;padding:1.4rem 2rem;display:flex;flex-direction:column;gap:1rem;}
+.ob-msg{display:flex;align-items:flex-start;gap:.6rem;}
+.ob-avatar{width:28px;height:28px;border-radius:50%;background:#D6E9FC;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem;}
+.ob-bub-wrap{display:flex;flex-direction:column;gap:.15rem;}
+.ob-sender{font-size:.68rem;font-weight:600;color:var(--muted);}
+.ob-bub{background:#f3f0f8;border-radius:0 8px 8px 8px;padding:.55rem .8rem;font-size:.78rem;color:var(--ink);max-width:320px;line-height:1.5;}
+.ob-bub.answer{background:#EBF3FD;color:#1A3A5C;border-radius:8px 8px 8px 0;margin-left:auto;}
+.ob-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-left:2.2rem;}
+.ob-chip{padding:.3rem .7rem;border-radius:99px;border:0.5px solid var(--rule);font-size:.72rem;color:var(--muted);background:var(--surface);}
+.ob-input-row{display:flex;align-items:center;gap:.5rem;background:#f5f3f0;border:0.5px solid var(--rule);border-radius:99px;padding:.4rem .4rem .4rem .9rem;margin:0 1.5rem .8rem;}
+.ob-input-faux{flex:1;font-size:.75rem;color:var(--muted);}
+.ob-send{width:26px;height:26px;border-radius:50%;background:#5B9CF6;display:flex;align-items:center;justify-content:center;font-size:.8rem;}
+
+/* DATA MODEL */
+.schema-block{background:var(--ink);border-radius:10px;padding:1.5rem;font-family:'DM Mono',monospace;font-size:.73rem;line-height:1.8;color:#e2e8f0;margin:.8rem 0;}
+.schema-block .kw{color:#c4b5fd;}.schema-block .ty{color:#67e8f9;}.schema-block .cm{color:#4a5568;}.schema-block .str{color:#86efac;}.schema-block .num{color:#f9a8d4;}
+
+/* RISK */
+.risk-grid{display:grid;gap:.6rem;margin:1rem 0;}
+.risk-row-item{display:grid;grid-template-columns:1fr 80px 80px 200px;gap:.8rem;align-items:start;padding:.75rem 1rem;border:1px solid var(--rule);border-radius:8px;background:var(--surface);font-size:.82rem;}
+.risk-row-item.header-row{background:transparent;border:none;padding:.3rem 1rem;font-family:'DM Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.rbadge{display:inline-block;padding:.15rem .5rem;border-radius:3px;font-size:.65rem;font-family:'DM Mono',monospace;font-weight:500;}
+.rbadge.high{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+.rbadge.med{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
+.rbadge.low{background:#ecfdf5;color:#059669;border:1px solid #a7f3d0;}
+.mitigation{font-size:.78rem;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-noise"></div><div class="cover-grid"></div><div class="cover-glow"></div><div class="cover-glow2"></div>
+  <div class="cover-header">
+    <div class="cover-logo">Legali Artificial Intelligence, Inc.</div>
+    <div class="cover-meta">Product Requirements Document<br>Version 2.0 · June 2026 · Confidential</div>
+  </div>
+  <div class="cover-body">
+    <div class="cover-badge">Internal PRD · Revised</div>
+    <h1 class="cover-title">Legali <em>Video</em><br>Studio</h1>
+    <p class="cover-subtitle">Social media analytics + AI auto video cut + brand onboarding — with interactive mockups, full data models, and prompt engineering specs.</p>
+    <div class="cover-pills">
+      <span class="cover-pill">Owner: Irawati Puteri (CEO)</span>
+      <span class="cover-pill">Eng: Gilbert Lee + Swapnil Botu</span>
+      <span class="cover-pill">Target: Q3 2026 · 12 weeks</span>
+      <span class="cover-pill">v2.0 — Full Spec</span>
+    </div>
+  </div>
+  <div class="cover-footer">
+    <div class="stat-block"><span class="stat-num">3</span><span class="stat-label">Core Modules</span></div>
+    <div class="stat-block"><span class="stat-num">4</span><span class="stat-label">Brand Kits</span></div>
+    <div class="stat-block"><span class="stat-num">7</span><span class="stat-label">API Integrations</span></div>
+    <div class="stat-block"><span class="stat-num">12wk</span><span class="stat-label">MVP Timeline</span></div>
+  </div>
+</div>
+
+<!-- DOCUMENT -->
+<div class="doc">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Table of Contents — v2.0</div>
+    <ol>
+      <li><a href="#overview">Executive Overview &amp; Prioritization<span class="toc-pg">2</span></a></li>
+      <li><a href="#users">Users, Personas &amp; Access Model<span class="toc-pg">3</span></a></li>
+      <li><a href="#module0">Module 0 — Brand Onboarding Flow <span class="toc-new">NEW</span><span class="toc-pg">4</span></a></li>
+      <li><a href="#module1">Module 1 — Video Analytics Dashboard<span class="toc-pg">7</span></a></li>
+      <li><a href="#module2">Module 2 — AI Auto Video Cut Studio<span class="toc-pg">10</span></a></li>
+      <li><a href="#prompts">Prompt Engineering Specs <span class="toc-new">NEW</span><span class="toc-pg">14</span></a></li>
+      <li><a href="#datamodel">Data Models &amp; API Schemas <span class="toc-new">NEW</span><span class="toc-pg">16</span></a></li>
+      <li><a href="#architecture">Technical Architecture<span class="toc-pg">19</span></a></li>
+      <li><a href="#roadmap">Roadmap &amp; Sprint Plan<span class="toc-pg">21</span></a></li>
+      <li><a href="#success">Success Metrics &amp; KPIs<span class="toc-pg">22</span></a></li>
+      <li><a href="#risks">Risks &amp; Mitigations<span class="toc-pg">23</span></a></li>
+    </ol>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 1. OVERVIEW -->
+  <section id="overview">
+    <div class="section-label">01 — Executive Overview</div>
+    <h1 class="section-title">What We're Building &amp; Why Now</h1>
+    <p>Legali AI runs four brand voices across Instagram, TikTok, and LinkedIn. Today, video production is manual, analytics are siloed across native dashboards, and brand consistency depends entirely on Ira's personal oversight. This does not scale past a 3-person team.</p>
+    <p><strong>Legali Video Studio</strong> is an internal AI-powered platform with three sequentially unlocking modules. Module 0 must ship first — nothing else works without brand kits trained.</p>
+
+    <div class="card-grid">
+      <div class="card purple">
+        <div class="card-icon">🎓</div>
+        <div class="card-title">Module 0 — Brand Onboarding</div>
+        <p class="card-desc">Conversational 7-question brand training flow per brand. Outputs a structured brand kit (voice, palette, tone, prohibited phrases, CTA, hashtags) that all downstream modules consume. <strong>Prerequisite for everything.</strong></p>
+      </div>
+      <div class="card blue">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Module 1 — Video Analytics</div>
+        <p class="card-desc">Unified cross-platform dashboard (Instagram + TikTok + LinkedIn) with AI weekly insight digest, brand health scorecards, content-type attribution, and waitlist conversion tracking.</p>
+      </div>
+      <div class="card pink">
+        <div class="card-icon">✂️</div>
+        <div class="card-title">Module 2 — AI Video Cut Studio</div>
+        <p class="card-desc">Upload raw footage → brand kit auto-applies → AI generates 3 candidate cuts → voice record or clone → export in 9:16/1:1/4:5 → direct publish or download. Target: &lt;2 min to first cut.</p>
+      </div>
+    </div>
+
+    <h2 class="sub-title">Feature Priority Map</h2>
+    <table class="prd-table">
+      <thead><tr><th>Feature</th><th>Module</th><th>Priority</th><th>Rationale</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr><td>Brand kit onboarding (conversational)</td><td>0</td><td><span class="tag tag-p0">P0</span></td><td>Gate for all other features</td><td>Gilbert</td></tr>
+        <tr><td>Brand kit enforcement on exports</td><td>0</td><td><span class="tag tag-p0">P0</span></td><td>Core value prop</td><td>Gilbert</td></tr>
+        <tr><td>Instagram + TikTok analytics ingestion</td><td>1</td><td><span class="tag tag-p0">P0</span></td><td>Core analytics value</td><td>Swapnil</td></tr>
+        <tr><td>Video upload + Whisper transcription</td><td>2</td><td><span class="tag tag-p0">P0</span></td><td>Foundation for AI cut</td><td>Gilbert</td></tr>
+        <tr><td>AI cut generation (Claude)</td><td>2</td><td><span class="tag tag-p0">P0</span></td><td>Primary differentiator</td><td>Gilbert</td></tr>
+        <tr><td>In-browser voice recording</td><td>2</td><td><span class="tag tag-p0">P0</span></td><td>Replaces ElevenLabs dependency for v1</td><td>Gilbert</td></tr>
+        <tr><td>Trauma-informed content safety (Lea)</td><td>0+2</td><td><span class="tag tag-p0">P0</span></td><td>Non-negotiable for Lea brand</td><td>Gilbert + Ira</td></tr>
+        <tr><td>LinkedIn analytics</td><td>1</td><td><span class="tag tag-p1">P1</span></td><td>Rick's primary channel</td><td>Swapnil</td></tr>
+        <tr><td>AI weekly insight digest email</td><td>1</td><td><span class="tag tag-p1">P1</span></td><td>High perceived value, low build cost</td><td>Swapnil</td></tr>
+        <tr><td>Direct social publishing</td><td>2</td><td><span class="tag tag-p1">P1</span></td><td>Reduces friction after export</td><td>Gilbert</td></tr>
+        <tr><td>ElevenLabs voice clone</td><td>2</td><td><span class="tag tag-p2">P2</span></td><td>Powerful but complex; v1.1</td><td>TBD</td></tr>
+        <tr><td>YouTube Shorts analytics</td><td>1</td><td><span class="tag tag-p2">P2</span></td><td>Not a primary channel yet</td><td>Swapnil</td></tr>
+        <tr><td>Role-based permissions (intern guard)</td><td>0</td><td><span class="tag tag-p1">P1</span></td><td>Risk mitigation for Lea content</td><td>Gilbert</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 2. USERS -->
+  <section id="users">
+    <div class="section-label">02 — Users &amp; Access Model</div>
+    <h1 class="section-title">Who Uses This &amp; What They Can Do</h1>
+
+    <div class="story-box">
+      <p><strong>Ira (Founder/CEO)</strong> — Primary power user. Uploads raw iPhone footage from events/daily life. Wants Lea's brand applied automatically, records narration in-browser, exports to Instagram within 10 min. Also the final approver on any Lea brand exports by intern users.</p>
+      <div class="story-attr">Role: Admin · Brands: All 4 · Publish: Yes · Approve: Yes</div>
+    </div>
+    <div class="story-box" style="background:linear-gradient(135deg,#0e4a6e 0%,#0c2340 100%);">
+      <p><strong>Swapnil (Data/Eng Intern)</strong> — Builds the analytics pipeline and manages data ingestion. Also a content user: uploads LegaliLearn demo clips, runs AI cuts, exports for TikTok. Cannot publish Lea content without Ira's approval.</p>
+      <div class="story-attr">Role: Intern · Brands: MyLegali, LegaliLearn · Publish: Requires approval for Lea · Approve: No</div>
+    </div>
+    <div class="story-box" style="background:linear-gradient(135deg,#1a3a0a 0%,#0d2005 100%);">
+      <p><strong>Rick (CSO)</strong> — Analytics read-only. Views weekly brand performance, checks conversion metrics before investor calls. Does not create content.</p>
+      <div class="story-attr">Role: Viewer · Brands: All (read-only) · Publish: No · Approve: No</div>
+    </div>
+
+    <h2 class="sub-title">Permission Matrix</h2>
+    <table class="prd-table">
+      <thead><tr><th>Action</th><th>Admin (Ira)</th><th>Intern</th><th>Viewer (Rick)</th></tr></thead>
+      <tbody>
+        <tr><td>View analytics dashboard</td><td>✅</td><td>✅</td><td>✅</td></tr>
+        <tr><td>Create/edit brand kits</td><td>✅</td><td>❌</td><td>❌</td></tr>
+        <tr><td>Upload raw footage</td><td>✅</td><td>✅</td><td>❌</td></tr>
+        <tr><td>Generate AI cuts</td><td>✅</td><td>✅</td><td>❌</td></tr>
+        <tr><td>Export video (non-Lea brands)</td><td>✅</td><td>✅</td><td>❌</td></tr>
+        <tr><td>Export video (Lea brand)</td><td>✅</td><td>⚠️ Draft only — Ira approves</td><td>❌</td></tr>
+        <tr><td>Direct publish to social</td><td>✅</td><td>⚠️ Non-Lea only</td><td>❌</td></tr>
+        <tr><td>Approve intern Lea exports</td><td>✅</td><td>❌</td><td>❌</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- MODULE 0 — BRAND ONBOARDING -->
+  <section id="module0">
+    <div class="section-label">03 — Module 0 <span class="tag tag-new" style="margin-left:.4rem;">NEW</span></div>
+    <h1 class="section-title">Brand Onboarding Flow</h1>
+
+    <div class="callout">
+      <strong>Why Module 0 is prerequisite:</strong> Every downstream feature — AI cut generation, caption style, safety filters, insight framing — depends on a trained brand kit. A user who skips this gets generic output. Module 0 must complete before a brand can publish any video.
+    </div>
+
+    <h2 class="sub-title">3.1 — Screen Mockup</h2>
+    <p>The onboarding UI is a split-screen: a sidebar with step tracker (mirroring Bevyl's UX pattern) and a conversational chat panel with Lea's bunny avatar. Quick-select chips reduce friction for common answers.</p>
+
+    <!-- ONBOARDING MOCKUP -->
+    <div class="mockup-frame">
+      <div class="mockup-titlebar">
+        <div class="mockup-dot" style="background:#ff5f57;"></div>
+        <div class="mockup-dot" style="background:#febc2e;"></div>
+        <div class="mockup-dot" style="background:#28c840;"></div>
+        <div class="mockup-url">studio.legali.ai / brand / lea / onboard</div>
+      </div>
+      <div class="mockup-body">
+        <div class="onboard-shell">
+          <div class="ob-sidebar">
+            <div class="ob-brand-label">Brand profile</div>
+            <div class="ob-brand-name">Lea by Legali</div>
+            <div class="ob-brand-sub">Filling in as we train your brand.</div>
+            <div class="ob-pbar-bg"><div class="ob-pbar-fill"></div></div>
+            <div class="ob-pmeta"><span>Answers saved</span><span>4/7</span></div>
+            <div class="ob-steps">
+              <div class="ob-step done"><div class="ob-step-dot"><div class="ob-step-dot-inner"></div></div><div><div class="ob-step-label">Company</div><div class="ob-step-status">Legali AI</div></div></div>
+              <div class="ob-step done"><div class="ob-step-dot"><div class="ob-step-dot-inner"></div></div><div><div class="ob-step-label">Industry</div><div class="ob-step-status">Legal technology</div></div></div>
+              <div class="ob-step done"><div class="ob-step-dot"><div class="ob-step-dot-inner"></div></div><div><div class="ob-step-label">Products</div><div class="ob-step-status">AI companion for DV…</div></div></div>
+              <div class="ob-step done"><div class="ob-step-dot"><div class="ob-step-dot-inner"></div></div><div><div class="ob-step-label">Customers</div><div class="ob-step-status">DV survivors</div></div></div>
+              <div class="ob-step active"><div class="ob-step-dot"><div class="ob-step-dot-inner"></div></div><div><div class="ob-step-label">Pain points</div><div class="ob-step-status">Waiting for answer</div></div></div>
+              <div class="ob-step"><div class="ob-step-dot"></div><div><div class="ob-step-label">Differentiators</div><div class="ob-step-status">Waiting for answer</div></div></div>
+              <div class="ob-step"><div class="ob-step-dot"></div><div><div class="ob-step-label">Brand voice</div><div class="ob-step-status">Waiting for answer</div></div></div>
+            </div>
+          </div>
+          <div class="ob-main">
+            <div class="ob-topbar">
+              <div class="ob-topbar-bar"><div class="ob-topbar-fill"></div></div>
+              <div class="ob-pct">57%</div>
+            </div>
+            <div class="ob-messages">
+              <div class="ob-msg"><div class="ob-avatar">🐰</div><div class="ob-bub-wrap"><div class="ob-sender">Lea</div><div class="ob-bub">Hey Irawati Puteri, let's train your brand.</div></div></div>
+              <div class="ob-msg"><div class="ob-avatar">🐰</div><div class="ob-bub-wrap"><div class="ob-sender">Lea</div><div class="ob-bub">First, what is your company called?</div></div></div>
+              <div style="display:flex;justify-content:flex-end;"><div class="ob-bub answer">Legali AI</div></div>
+              <div class="ob-msg"><div class="ob-avatar">🐰</div><div class="ob-bub-wrap"><div class="ob-sender">Lea</div><div class="ob-bub">What's the core pain point Lea solves?</div></div></div>
+              <div class="ob-chips">
+                <div class="ob-chip">Navigating protective orders alone</div>
+                <div class="ob-chip">Legal system is inaccessible</div>
+                <div class="ob-chip">Lack of trauma-informed support</div>
+              </div>
+            </div>
+            <div class="ob-input-row"><div class="ob-input-faux">Type your answer…</div><div class="ob-send">→</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sub-title">3.2 — The 7 Questions &amp; Their Purpose</h2>
+    <table class="prd-table">
+      <thead><tr><th>#</th><th>Question</th><th>Field Written To</th><th>Used By</th><th>Quick-Select Chips</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>What is your company called?</td><td><code>brand_kit.company_name</code></td><td>Analytics labels, video watermark</td><td>—</td></tr>
+        <tr><td>2</td><td>What industry/space does this brand operate in?</td><td><code>brand_kit.industry</code></td><td>AI insight framing, hashtag suggestions</td><td>Legal technology · Advocacy · SaaS / B2C</td></tr>
+        <tr><td>3</td><td>What product or service does this brand provide?</td><td><code>brand_kit.product_description</code></td><td>AI cut script generation system prompt</td><td>AI companion for DV survivors · Legal doc tool · Court navigation</td></tr>
+        <tr><td>4</td><td>Who are your primary customers?</td><td><code>brand_kit.target_audience</code></td><td>Caption targeting, hook style, tone calibration</td><td>DV survivors · Self-rep litigants · Nonprofits</td></tr>
+        <tr><td>5</td><td>What core pain point do you solve?</td><td><code>brand_kit.pain_point</code></td><td>Hook generation prompt, awareness reel template</td><td>Navigating protective orders · Legal inaccessibility · Trauma-informed gap</td></tr>
+        <tr><td>6</td><td>What makes you different from alternatives?</td><td><code>brand_kit.differentiators[]</code></td><td>UGC review template, founder story template</td><td>Trauma-informed AI · Agentic &amp; problem-first · Bilingual EN/ID</td></tr>
+        <tr><td>7</td><td>How would you describe your brand voice and tone?</td><td><code>brand_kit.voice_description</code> + <code>brand_kit.tone_tags[]</code></td><td>All AI text generation — captions, narration, hooks</td><td>Warm &amp; empathetic · Empowering &amp; direct · Gentle &amp; trustworthy</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="sub-title">3.3 — Post-Onboarding: Visual Identity Configuration</h2>
+    <p>After the 7 conversational questions, the user is taken to a structured form to complete the brand kit's visual layer:</p>
+    <ul class="prd-list">
+      <li>Primary &amp; secondary color pickers (hex) — pre-populated with Legali brand defaults per brand</li>
+      <li>Font family selector with live preview (Google Fonts + system fonts)</li>
+      <li>Logo upload (PNG/SVG, max 2MB) with placement preview: top-left, bottom-left, bottom-right</li>
+      <li>Transition style selector: Soft Fade / Clean Cut / Snap / Bounce — with animated preview</li>
+      <li>Caption style selector: word-by-word / line-by-line / highlight key terms — with preview</li>
+      <li>Trauma-informed mode toggle (default ON for Lea, OFF for all others)</li>
+      <li>Music mood selector: Soft Emotional / Confident / Playful / Corporate / None</li>
+      <li>CTA template text field: e.g. "Join the waitlist at lea.legali.ai"</li>
+      <li>Prohibited phrases: tag input — these are injected into every AI generation prompt as hard exclusions</li>
+      <li>Hashtag library: tag input — auto-appended to exported captions per platform limits</li>
+    </ul>
+
+    <div class="callout pink">
+      <strong>Lea-specific defaults pre-loaded:</strong> Primary <code>#3D0026</code>, Secondary <code>#FF6B9D</code>, Font: Quicksand Bold, Transition: Soft Fade, Trauma-informed: ON, Prohibited phrases: [survivor-blaming language list from Lea content guide]. These are editable but the system warns if Ira tries to disable trauma-informed mode.
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- MODULE 1 — ANALYTICS -->
+  <section id="module1">
+    <div class="section-label">04 — Module 1</div>
+    <h1 class="section-title">Video Analytics Dashboard</h1>
+
+    <h2 class="sub-title">4.1 — Screen Mockup</h2>
+
+    <div class="mockup-frame">
+      <div class="mockup-titlebar">
+        <div class="mockup-dot" style="background:#ff5f57;"></div>
+        <div class="mockup-dot" style="background:#febc2e;"></div>
+        <div class="mockup-dot" style="background:#28c840;"></div>
+        <div class="mockup-url">studio.legali.ai / analytics</div>
+      </div>
+      <div class="mockup-body">
+        <div class="analytics-shell">
+          <div class="analytics-nav">
+            <div class="nav-brand">Legali<br>Studio</div>
+            <div class="nav-item active"><div class="nav-dot"></div>Analytics</div>
+            <div class="nav-item"><div class="nav-dot"></div>Video Studio</div>
+            <div class="nav-item"><div class="nav-dot"></div>Brand Kits</div>
+            <div class="nav-item"><div class="nav-dot"></div>Publish Queue</div>
+            <div style="margin-top:auto;padding:.5rem .7rem;font-size:.72rem;color:var(--muted);">
+              <div style="font-weight:600;margin-bottom:.2rem;">Irawati Puteri</div>
+              <div style="font-size:.65rem;">Admin · All brands</div>
+            </div>
+          </div>
+          <div class="analytics-main">
+            <div class="analytics-header">
+              <div class="analytics-title">Performance Overview</div>
+              <div class="analytics-controls">
+                <div class="ctrl-btn">7d</div>
+                <div class="ctrl-btn active">30d</div>
+                <div class="ctrl-btn">90d</div>
+                <div class="ctrl-btn" style="margin-left:.4rem;">All brands ▾</div>
+              </div>
+            </div>
+            <div class="kpi-row">
+              <div class="kpi-card"><div class="kpi-val">284K</div><div class="kpi-label">Total Views</div><div class="kpi-delta">↑ 34% vs prev</div></div>
+              <div class="kpi-card"><div class="kpi-val">18.2K</div><div class="kpi-label">Engagements</div><div class="kpi-delta">↑ 21%</div></div>
+              <div class="kpi-card"><div class="kpi-val">6.4%</div><div class="kpi-label">Avg Watch-thru</div><div class="kpi-delta" style="color:var(--warn);">↓ 2%</div></div>
+              <div class="kpi-card"><div class="kpi-val">312</div><div class="kpi-label">Waitlist Clicks</div><div class="kpi-delta">↑ 58%</div></div>
+            </div>
+            <div class="chart-placeholder">
+              <div class="bar" style="height:40%;background:#c4b5fd;"></div>
+              <div class="bar" style="height:55%;background:#c4b5fd;"></div>
+              <div class="bar" style="height:48%;background:#c4b5fd;"></div>
+              <div class="bar" style="height:72%;background:#7c3aed;"></div>
+              <div class="bar" style="height:65%;background:#c4b5fd;"></div>
+              <div class="bar" style="height:80%;background:#7c3aed;"></div>
+              <div class="bar" style="height:91%;background:#7c3aed;"></div>
+              <div class="bar" style="height:77%;background:#c4b5fd;"></div>
+              <div class="bar" style="height:85%;background:#7c3aed;"></div>
+              <div class="bar" style="height:68%;background:#c4b5fd;"></div>
+              <div class="bar" style="height:74%;background:#f9a8d4;"></div>
+              <div class="bar" style="height:93%;background:#db2777;"></div>
+            </div>
+            <div class="insight-strip">
+              <div class="insight-label">✦ AI Insight · This week</div>
+              Lea's "Is This Abuse?" awareness reel (June 3) drove 58% of all waitlist clicks this month. Hook phrasing "You might not even realize…" outperformed direct stat-drop openers by 2.4×. Recommend: 2 more reels this week using personal-story hook format.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sub-title">4.2 — Data Sources &amp; Ingestion</h2>
+    <table class="prd-table">
+      <thead><tr><th>Platform</th><th>API</th><th>Key Metrics</th><th>Refresh</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Instagram</strong></td><td>Meta Graph API v19 (Business)</td><td>Views, reach, saves, shares, plays, profile visits, link clicks, audience age/gender</td><td>Every 6h</td><td><span class="tag tag-p0">P0</span></td></tr>
+        <tr><td><strong>TikTok</strong></td><td>TikTok for Business API v2</td><td>Views, likes, comments, shares, watch-through %, follower growth, sound attribution</td><td>Every 6h</td><td><span class="tag tag-p0">P0</span></td></tr>
+        <tr><td><strong>LinkedIn</strong></td><td>LinkedIn Marketing API v2</td><td>Impressions, unique views, clicks, CTR, engagement rate, follower growth by post</td><td>Every 12h</td><td><span class="tag tag-p1">P1</span></td></tr>
+        <tr><td><strong>YouTube Shorts</strong></td><td>YouTube Data API v3</td><td>Views, watch time, subscribers gained, CTR, audience retention curve</td><td>Every 24h</td><td><span class="tag tag-p2">P2</span></td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="sub-title">4.3 — Feature Specifications</h2>
+    <h3 class="sub-sub">4.3.1 — Overview Panel</h3>
+    <ul class="prd-list">
+      <li>Cross-platform KPI cards: Total Views, Total Engagements, Avg Watch-Through %, Waitlist Clicks — filterable by brand and date range (7d / 30d / 90d / custom)</li>
+      <li>Trend sparkline per KPI with period-over-period delta (% change, colored green/red)</li>
+      <li>Best-performing video thumbnails row (top 5) with click-through to native post and key metric badge</li>
+      <li>Platform split donut chart: % of total views per platform, per brand</li>
+    </ul>
+    <h3 class="sub-sub">4.3.2 — Content-Type Attribution</h3>
+    <ul class="prd-list">
+      <li>Auto-tag each published post by format: Reel, Carousel, Static, Story, TikTok, Short — via AI classification on caption text + thumbnail embedding</li>
+      <li>Performance comparison table by content type: avg views, avg saves, avg shares, avg profile visits generated</li>
+      <li>Highlight best format for each goal: top-of-funnel (profile visits) vs. nurture (saves) vs. conversion (link clicks)</li>
+    </ul>
+    <h3 class="sub-sub">4.3.3 — AI Insight Feed (Claude-powered)</h3>
+    <ul class="prd-list">
+      <li>Weekly AI "what worked this week" digest — 3–5 bullet observations with specific post references and a suggested next action</li>
+      <li>Best posting time heatmap per platform based on rolling 30-day audience activity patterns</li>
+      <li>Hook-strength pattern detector: extracts first-3-second transcripts from top-performing videos, surfaces recurring language patterns correlated with high watch-through</li>
+      <li>Alert system: push notification + email when any brand drops below its 7-day rolling engagement baseline by &gt;20%</li>
+    </ul>
+    <h3 class="sub-sub">4.3.4 — Waitlist Attribution (Lea-specific)</h3>
+    <ul class="prd-list">
+      <li>UTM parameter tracking from Lea's Instagram bio link → waitlist signup page</li>
+      <li>Last-touch attribution: which post drove the session that converted?</li>
+      <li>Funnel view: total video views → profile visits → bio link clicks → waitlist signups — with conversion rates at each step</li>
+      <li>Weekly trend line for waitlist signups attributed to video content</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- MODULE 2 — STUDIO -->
+  <section id="module2">
+    <div class="section-label">05 — Module 2</div>
+    <h1 class="section-title">AI Auto Video Cut Studio</h1>
+
+    <h2 class="sub-title">5.1 — Studio Screen Mockup</h2>
+
+    <div class="mockup-frame">
+      <div class="mockup-titlebar">
+        <div class="mockup-dot" style="background:#ff5f57;"></div>
+        <div class="mockup-dot" style="background:#febc2e;"></div>
+        <div class="mockup-dot" style="background:#28c840;"></div>
+        <div class="mockup-url">studio.legali.ai / studio / project-4821</div>
+      </div>
+      <div class="mockup-body">
+        <div class="studio-shell">
+          <div class="studio-toolbar">
+            <div class="tb-logo">Legali Studio</div>
+            <div class="tb-btn">← Projects</div>
+            <div class="tb-btn">Undo</div>
+            <div class="tb-btn">Redo</div>
+            <div class="tb-brand-pill"><div class="tb-brand-dot"></div>Lea by Legali</div>
+            <div class="tb-btn">Regenerate ↺</div>
+            <div class="tb-btn primary">Export →</div>
+          </div>
+          <div class="studio-canvas">
+            <div class="canvas-preview">
+              <div class="video-frame">
+                <div class="vf-bg"><div class="vf-play">▶</div></div>
+                <div class="vf-caption">You might not even realize…</div>
+                <div class="vf-badge">AI Cut #1</div>
+              </div>
+              <div class="candidate-strip">
+                <div style="font-size:.52rem;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;text-align:center;margin-bottom:.2rem;">CUTS</div>
+                <div class="cand-thumb selected">Cut<br>#1<br>★ 8.4</div>
+                <div class="cand-thumb">Cut<br>#2<br>7.9</div>
+                <div class="cand-thumb">Cut<br>#3<br>7.1</div>
+              </div>
+            </div>
+            <div class="studio-panel">
+              <div class="panel-section">
+                <div class="panel-label">Engagement score</div>
+                <div style="font-size:1.2rem;color:#c4b5fd;font-family:'DM Mono',monospace;font-weight:500;">8.4 / 10</div>
+                <div class="score-bar-bg"><div class="score-bar-fill" style="width:84%;background:linear-gradient(90deg,#7c3aed,#db2777);"></div></div>
+                <div style="font-size:.6rem;color:rgba(255,255,255,.3);margin-top:.25rem;">Hook strength: 9.1 · Pacing: 8.0 · Brand fit: 7.9</div>
+              </div>
+              <div class="panel-section">
+                <div class="panel-label">Brand kit</div>
+                <div class="panel-item">Brand<div class="panel-val">Lea by Legali</div></div>
+                <div class="panel-item">Format<div class="panel-val">Awareness Hook</div></div>
+                <div class="panel-item">Duration<div class="panel-val">28s</div></div>
+                <div class="panel-item">Aspect<div class="panel-val">9:16</div></div>
+                <div class="panel-item">Safety<div class="panel-val" style="color:#86efac;">✓ Passed</div></div>
+              </div>
+              <div class="panel-section">
+                <div class="panel-label">Voice</div>
+                <div class="voice-row">
+                  <div class="voice-btn active">🎙 Record</div>
+                  <div class="voice-btn idle">🤖 AI Clone</div>
+                  <div class="voice-btn idle">📚 Library</div>
+                </div>
+              </div>
+              <div class="panel-section">
+                <div class="panel-label">Caption</div>
+                <div style="background:rgba(255,255,255,.04);border-radius:5px;padding:.5rem;font-size:.68rem;color:rgba(255,255,255,.6);line-height:1.6;">You might not even realize you're experiencing coercive control. Lea by Legali helps you understand what's happening — and what you can do.</div>
+              </div>
+              <div class="panel-section">
+                <div class="panel-label">Export</div>
+                <div class="panel-item">9:16 Reels/TikTok<div class="panel-val">✓</div></div>
+                <div class="panel-item">1:1 Feed<div class="panel-val">—</div></div>
+                <div class="panel-item">4:5 Portrait<div class="panel-val">—</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="studio-timeline">
+            <div class="tl-track">
+              <div class="tl-track-label">VIDEO</div>
+              <div class="tl-clips">
+                <div class="tl-clip" style="flex:3;background:#4c1d95;">Clip 1 · 0:00–0:08</div>
+                <div class="tl-clip" style="flex:2;background:#4c1d95;">Clip 2 · 0:09–0:18</div>
+                <div class="tl-clip" style="flex:1.5;background:#4c1d95;">Clip 3</div>
+              </div>
+            </div>
+            <div class="tl-track">
+              <div class="tl-track-label">VOICE</div>
+              <div class="tl-clips">
+                <div class="tl-clip" style="flex:6.5;background:#1e3a5f;">Narration · 0:00–0:26</div>
+              </div>
+            </div>
+            <div class="tl-track">
+              <div class="tl-track-label">MUSIC</div>
+              <div class="tl-clips">
+                <div class="tl-clip" style="flex:7;background:#1a2e1a;opacity:.7;">Soft ambient · full</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sub-title">5.2 — Core User Flow</h2>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-phase">Step 1</div><div class="tl-title">Upload Raw Footage</div><p class="tl-desc">Browser drag-and-drop. Accepts MP4, MOV, HEVC up to 4GB total. Chunked upload to Supabase Storage. Auto-transcription (Whisper v3) begins immediately. Waveform + transcript preview shown as it streams in.</p></div>
+      <div class="tl-item"><div class="tl-dot pink"></div><div class="tl-phase pink">Step 2</div><div class="tl-title">Select Brand Kit + Format Template</div><p class="tl-desc">Dropdown of trained brand kits. Format picker with animated previews (Awareness Hook, Founder Story, UGC Review, Listicle, Q&A, Product Demo, Day in My Life). Brand kit immediately previews color/font choices.</p></div>
+      <div class="tl-item"><div class="tl-dot blue"></div><div class="tl-phase blue">Step 3</div><div class="tl-title">AI Context Analysis</div><p class="tl-desc">4-layer analysis runs in parallel: speech scoring, visual quality scoring, brand voice alignment, format constraint checking. Produces 3 ranked candidate edits with engagement scores. Time target: &lt;30s from transcript ready.</p></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-phase">Step 4</div><div class="tl-title">Review, Fine-tune &amp; Voice</div><p class="tl-desc">Split-screen: preview left, controls right. Drag-and-drop timeline for reordering. Per-clip trim handles. In-browser mic recording with noise removal and loudness normalization. Inline caption editing. Regenerate with preference nudge.</p></div>
+      <div class="tl-item"><div class="tl-dot green"></div><div class="tl-phase green">Step 5</div><div class="tl-title">Export &amp; Publish</div><p class="tl-desc">One-click resize for 9:16 / 1:1 / 4:5 / 16:9. Export as MP4 + optional SRT. Direct push to Meta Business Suite or TikTok for Business with caption pre-filled. Schedule future publish via calendar picker.</p></div>
+    </div>
+
+    <h2 class="sub-title">5.3 — AI Context Awareness Engine</h2>
+    <div class="card-grid">
+      <div class="card purple"><div class="card-icon">🎤</div><div class="card-title">Speech Layer</div><p class="card-desc">Whisper v3 transcript → segment classification. Each 5s segment scored on: clarity (0–1), emotional intensity (0–1), information density (0–1), hook potential (0–1). Top 20% of segments form the candidate pool.</p></div>
+      <div class="card blue"><div class="card-icon">👁️</div><div class="card-title">Visual Layer</div><p class="card-desc">Frame sampling at 1fps via GPT-4V. Scores per frame: eye contact (0–1), lighting quality (0–1), background clutter (0–1), motion stability (0–1). Frames below 0.5 composite are excluded.</p></div>
+      <div class="card pink"><div class="card-icon">🧠</div><div class="card-title">Brand Voice Layer</div><p class="card-desc">Brand kit voice description + prohibited phrases injected as system prompt context. Claude evaluates each candidate segment for voice alignment score (0–1). Clips below 0.6 are deprioritized.</p></div>
+      <div class="card green"><div class="card-icon">📐</div><div class="card-title">Format Constraint Layer</div><p class="card-desc">Each format template defines: target duration ± 5s, pacing style (fast/slow/dramatic), CTA placement (final 5s), hook window (first 3s must be &gt;0.8 hook score). AI selects clips to satisfy all constraints.</p></div>
+    </div>
+
+    <h2 class="sub-title">5.4 — Format Templates</h2>
+    <table class="prd-table">
+      <thead><tr><th>Template</th><th>Duration</th><th>Hook Style</th><th>Pacing</th><th>Best Brands</th><th>Priority</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Awareness Hook Reel</strong></td><td>15–30s</td><td>Stat-drop or personal-story opener</td><td>Fast cut (2–4s clips)</td><td>Lea</td><td><span class="tag tag-p0">P0</span></td></tr>
+        <tr><td><strong>Founder Story</strong></td><td>45–60s</td><td>Mission / "why I built this"</td><td>Slow burn, talking-head</td><td>All (Ira-narrated)</td><td><span class="tag tag-p0">P0</span></td></tr>
+        <tr><td><strong>UGC Creator Review</strong></td><td>30–45s</td><td>Direct-to-camera testimonial</td><td>Moderate, B-roll cutaways</td><td>Lea, MyLegali</td><td><span class="tag tag-p0">P0</span></td></tr>
+        <tr><td><strong>Q&amp;A / Legal FAQ</strong></td><td>30–60s</td><td>Question overlay in text</td><td>Structured, answer-per-cut</td><td>MyLegali, LegaliLearn</td><td><span class="tag tag-p1">P1</span></td></tr>
+        <tr><td><strong>Listicle</strong></td><td>30–45s</td><td>Numbered text overlay</td><td>Snap cuts between points</td><td>LegaliLearn, Lea</td><td><span class="tag tag-p1">P1</span></td></tr>
+        <tr><td><strong>Product Demo</strong></td><td>45–90s</td><td>Pain-point → solution reveal</td><td>Screen recording + narration</td><td>TeamLegali</td><td><span class="tag tag-p2">P2</span></td></tr>
+        <tr><td><strong>Day in My Life</strong></td><td>60–90s</td><td>Personal opener / ambient moment</td><td>Vlog-style, lifestyle B-roll</td><td>All (Ira-narrated)</td><td><span class="tag tag-p2">P2</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- PROMPT ENGINEERING -->
+  <section id="prompts">
+    <div class="section-label">06 — Prompt Engineering Specs <span class="tag tag-new" style="margin-left:.4rem;">NEW</span></div>
+    <h1 class="section-title">AI Prompt Architecture</h1>
+
+    <p>All Claude API calls follow a consistent 3-layer prompt structure: <strong>System context</strong> (brand kit + safety rules), <strong>Task instructions</strong> (what to generate), <strong>Input data</strong> (transcript segments / analytics). Below are the production prompt specs for each AI call.</p>
+
+    <h2 class="sub-title">6.1 — Cut Generation Prompt</h2>
+    <div class="schema-block">
+<span class="cm">// SYSTEM PROMPT — injected once per project</span><br>
+<span class="kw">SYSTEM</span>:<br>
+You are an expert short-form video editor working for <span class="str">{brand_kit.company_name}</span>.<br>
+<span class="cm">// Brand voice context</span><br>
+Brand voice: <span class="str">{brand_kit.voice_description}</span><br>
+Tone tags: <span class="str">{brand_kit.tone_tags.join(', ')}</span><br>
+Target audience: <span class="str">{brand_kit.target_audience}</span><br>
+Core product: <span class="str">{brand_kit.product_description}</span><br>
+<span class="cm">// Hard constraints</span><br>
+NEVER include the following phrases in any generated text: <span class="str">{brand_kit.prohibited_phrases.join(', ')}</span><br>
+<span class="kw">if</span> (brand_kit.trauma_informed_mode) {<br>
+&nbsp;&nbsp;Apply trauma-informed language standards. Avoid re-traumatizing phrasing,<br>
+&nbsp;&nbsp;minimizing language, or content that centers perpetrators over survivors.<br>
+&nbsp;&nbsp;Flag any segment transcript that contains: [victim-blaming phrases list]<br>
+}<br>
+<br>
+<span class="kw">USER</span>:<br>
+Format template: <span class="str">{template.name}</span><br>
+Target duration: <span class="str">{template.duration_min}–{template.duration_max}s</span><br>
+Pacing: <span class="str">{template.pacing_style}</span><br>
+<br>
+Transcript segments with scores:<br>
+<span class="num">[{segment_id, start_ms, end_ms, text, speech_score, visual_score}]</span><br>
+<br>
+Generate 3 candidate edits. For each, return:<br>
+- Selected segment IDs in order<br>
+- Hook text (first 3 seconds, max 8 words)<br>
+- Caption narration script (brand voice aligned)<br>
+- CTA text (last 5 seconds)<br>
+- Predicted engagement score (0–10) with breakdown<br>
+Respond in JSON only.
+    </div>
+
+    <h2 class="sub-title">6.2 — Weekly Analytics Insight Prompt</h2>
+    <div class="schema-block">
+<span class="kw">SYSTEM</span>:<br>
+You are the analytics advisor for Legali AI, a legal technology company.<br>
+Write in a <span class="str">direct, data-driven, actionable</span> tone for the CEO.<br>
+Focus on: what drove performance, what underperformed and why, and 1 specific recommended action.<br>
+Reference specific posts by name/date. Be concrete — no generic advice.<br>
+<br>
+<span class="kw">USER</span>:<br>
+Analytics data for the past 7 days across all brands:<br>
+<span class="num">{analytics_summary_json}</span><br>
+<br>
+Generate:<br>
+1. A 2-sentence "week in review" summary<br>
+2. Top 3 performance observations (with post references)<br>
+3. 1 pattern identified (hook language, posting time, content type)<br>
+4. 1 specific recommended action for next week<br>
+5. 1 metric to watch<br>
+Max 250 words. Return as structured JSON with keys: summary, observations[], pattern, action, watch_metric.
+    </div>
+
+    <h2 class="sub-title">6.3 — Trauma-Informed Content Safety Check</h2>
+    <div class="schema-block">
+<span class="cm">// Runs on ALL Lea brand AI-generated text before display</span><br>
+<span class="kw">SYSTEM</span>:<br>
+You are a trauma-informed content reviewer for Lea by Legali,<br>
+an AI companion for domestic violence survivors.<br>
+Review the following generated text for:<br>
+- Victim-blaming language (e.g. "why didn't she leave", "she provoked")<br>
+- Minimizing language (e.g. "just abuse", "it wasn't that bad")<br>
+- Perpetrator-centering (focusing on abuser's actions/emotions over survivor agency)<br>
+- Crisis triggers without appropriate warning (graphic descriptions of violence)<br>
+- Anything that could discourage a survivor from seeking help<br>
+<br>
+<span class="kw">USER</span>:<br>
+Review this generated caption/script:<br>
+<span class="str">"{generated_text}"</span><br>
+<br>
+Return JSON:<br>
+{ passed: boolean, flags: [{phrase, reason, suggested_replacement}], revised_text: string }
+    </div>
+
+    <h2 class="sub-title">6.4 — Caption Hook Generation Prompt</h2>
+    <div class="schema-block">
+<span class="kw">USER</span>:<br>
+Generate 3 alternative hook texts for this video segment.<br>
+Hook must: (1) appear in first 3 seconds, (2) max 8 words, (3) create curiosity or urgency<br>
+Format template: <span class="str">{template.name}</span><br>
+Brand voice: <span class="str">{brand_kit.voice_description}</span><br>
+Segment transcript: <span class="str">"{segment.text}"</span><br>
+Top-performing hook patterns for this brand (last 30 days):<br>
+<span class="num">{top_hooks_from_analytics}</span><br>
+Return JSON: [{hook_text, predicted_watch_through_score, style_tag}]
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- DATA MODELS -->
+  <section id="datamodel">
+    <div class="section-label">07 — Data Models &amp; API Schemas <span class="tag tag-new" style="margin-left:.4rem;">NEW</span></div>
+    <h1 class="section-title">Database &amp; API Design</h1>
+
+    <h2 class="sub-title">7.1 — Core PostgreSQL Schema</h2>
+
+    <h3 class="sub-sub">brand_kits table</h3>
+    <div class="schema-block">
+<span class="kw">CREATE TABLE</span> brand_kits (<br>
+&nbsp;&nbsp;id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">UUID</span> PRIMARY KEY DEFAULT gen_random_uuid(),<br>
+&nbsp;&nbsp;org_id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">UUID</span> NOT NULL REFERENCES organizations(id),<br>
+&nbsp;&nbsp;brand_name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> NOT NULL, <span class="cm">-- e.g. 'Lea by Legali'</span><br>
+&nbsp;&nbsp;company_name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> NOT NULL,<br>
+&nbsp;&nbsp;industry&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;product_description<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;target_audience&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;pain_point&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;differentiators&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT[]</span>,<br>
+&nbsp;&nbsp;voice_description&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;tone_tags&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT[]</span>,<br>
+&nbsp;&nbsp;prohibited_phrases&nbsp;<span class="ty">TEXT[]</span>,<br>
+&nbsp;&nbsp;primary_color&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">CHAR(7)</span>, <span class="cm">-- hex e.g. '#3D0026'</span><br>
+&nbsp;&nbsp;secondary_color&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">CHAR(7)</span>,<br>
+&nbsp;&nbsp;font_family&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;logo_url&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;logo_position&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> CHECK (logo_position IN (<span class="str">'top-left','bottom-left','bottom-right'</span>)),<br>
+&nbsp;&nbsp;transition_style&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> CHECK (transition_style IN (<span class="str">'soft-fade','clean-cut','snap','bounce'</span>)),<br>
+&nbsp;&nbsp;caption_style&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> CHECK (caption_style IN (<span class="str">'word-by-word','line-by-line','highlight'</span>)),<br>
+&nbsp;&nbsp;music_mood&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;cta_template&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;hashtag_library&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT[]</span>,<br>
+&nbsp;&nbsp;trauma_informed&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">BOOLEAN</span> DEFAULT false,<br>
+&nbsp;&nbsp;onboarding_complete<span class="ty">BOOLEAN</span> DEFAULT false,<br>
+&nbsp;&nbsp;onboarding_step&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">INT</span> DEFAULT 0, <span class="cm">-- 0-7, for resumable flow</span><br>
+&nbsp;&nbsp;created_at&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TIMESTAMPTZ</span> DEFAULT now(),<br>
+&nbsp;&nbsp;updated_at&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TIMESTAMPTZ</span> DEFAULT now()<br>
+);
+    </div>
+
+    <h3 class="sub-sub">video_projects table</h3>
+    <div class="schema-block">
+<span class="kw">CREATE TABLE</span> video_projects (<br>
+&nbsp;&nbsp;id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">UUID</span> PRIMARY KEY DEFAULT gen_random_uuid(),<br>
+&nbsp;&nbsp;brand_kit_id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">UUID</span> NOT NULL REFERENCES brand_kits(id),<br>
+&nbsp;&nbsp;created_by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">UUID</span> NOT NULL REFERENCES users(id),<br>
+&nbsp;&nbsp;template_name&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> NOT NULL,<br>
+&nbsp;&nbsp;status&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> CHECK (status IN (<span class="str">'uploading','transcribing','analyzing','ready','exported'</span>)),<br>
+&nbsp;&nbsp;raw_clip_urls&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT[]</span>, <span class="cm">-- Supabase Storage paths</span><br>
+&nbsp;&nbsp;transcript_json&nbsp;&nbsp;<span class="ty">JSONB</span>, <span class="cm">-- [{segment_id, start_ms, end_ms, text, speaker}]</span><br>
+&nbsp;&nbsp;segment_scores&nbsp;&nbsp;&nbsp;<span class="ty">JSONB</span>, <span class="cm">-- [{segment_id, speech, visual, brand, composite}]</span><br>
+&nbsp;&nbsp;candidates&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">JSONB</span>, <span class="cm">-- [{rank, segments[], hook, caption, cta, score}]</span><br>
+&nbsp;&nbsp;selected_candidate<span class="ty">INT</span> DEFAULT 0,<br>
+&nbsp;&nbsp;safety_check&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">JSONB</span>, <span class="cm">-- {passed, flags[], revised_text}</span><br>
+&nbsp;&nbsp;voice_type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> CHECK (voice_type IN (<span class="str">'recorded','ai-clone','library','none'</span>)),<br>
+&nbsp;&nbsp;voice_url&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;export_formats&nbsp;&nbsp;&nbsp;<span class="ty">TEXT[]</span>, <span class="cm">-- ['9:16','1:1','4:5']</span><br>
+&nbsp;&nbsp;exported_urls&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">JSONB</span>, <span class="cm">-- {format: url} mapping</span><br>
+&nbsp;&nbsp;approval_status&nbsp;&nbsp;<span class="ty">TEXT</span> CHECK (approval_status IN (<span class="str">'not-required','pending','approved','rejected'</span>)),<br>
+&nbsp;&nbsp;approved_by&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">UUID</span> REFERENCES users(id),<br>
+&nbsp;&nbsp;created_at&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TIMESTAMPTZ</span> DEFAULT now()<br>
+);
+    </div>
+
+    <h3 class="sub-sub">analytics_snapshots table</h3>
+    <div class="schema-block">
+<span class="kw">CREATE TABLE</span> analytics_snapshots (<br>
+&nbsp;&nbsp;id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">UUID</span> PRIMARY KEY DEFAULT gen_random_uuid(),<br>
+&nbsp;&nbsp;brand_kit_id&nbsp;&nbsp;&nbsp;<span class="ty">UUID</span> NOT NULL REFERENCES brand_kits(id),<br>
+&nbsp;&nbsp;platform&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> CHECK (platform IN (<span class="str">'instagram','tiktok','linkedin','youtube'</span>)),<br>
+&nbsp;&nbsp;post_id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span> NOT NULL, <span class="cm">-- native platform post ID</span><br>
+&nbsp;&nbsp;post_url&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>,<br>
+&nbsp;&nbsp;content_type&nbsp;&nbsp;&nbsp;<span class="ty">TEXT</span>, <span class="cm">-- 'reel','carousel','static','story','tiktok','short'</span><br>
+&nbsp;&nbsp;published_at&nbsp;&nbsp;&nbsp;<span class="ty">TIMESTAMPTZ</span>,<br>
+&nbsp;&nbsp;views&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">BIGINT</span>,<br>
+&nbsp;&nbsp;likes&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">INT</span>,<br>
+&nbsp;&nbsp;comments&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">INT</span>,<br>
+&nbsp;&nbsp;shares&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">INT</span>,<br>
+&nbsp;&nbsp;saves&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">INT</span>,<br>
+&nbsp;&nbsp;reach&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">BIGINT</span>,<br>
+&nbsp;&nbsp;profile_visits&nbsp;<span class="ty">INT</span>,<br>
+&nbsp;&nbsp;link_clicks&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">INT</span>,<br>
+&nbsp;&nbsp;watch_through_pct<span class="ty">NUMERIC(5,2)</span>,<br>
+&nbsp;&nbsp;utm_conversions&span class="ty">INT</span> DEFAULT 0, <span class="cm">-- waitlist signups attributed</span><br>
+&nbsp;&nbsp;snapshot_at&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">TIMESTAMPTZ</span> DEFAULT now()<br>
+);<br>
+<span class="kw">CREATE INDEX</span> ON analytics_snapshots (brand_kit_id, platform, published_at DESC);<br>
+<span class="kw">CREATE INDEX</span> ON analytics_snapshots (post_id, snapshot_at DESC);
+    </div>
+
+    <h2 class="sub-title">7.2 — REST API Endpoints</h2>
+    <table class="prd-table">
+      <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET</code></td><td><code>/api/v1/brand-kits</code></td><td>List all brand kits for org</td><td>Admin, Intern</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/v1/brand-kits</code></td><td>Create new brand kit (starts onboarding)</td><td>Admin only</td></tr>
+        <tr><td><code>PATCH</code></td><td><code>/api/v1/brand-kits/{id}/onboard</code></td><td>Save onboarding answer, advance step</td><td>Admin only</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/v1/analytics/overview</code></td><td>Aggregate KPIs across brands/platforms</td><td>All roles</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/v1/analytics/posts</code></td><td>Per-post metrics with filters</td><td>All roles</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/v1/analytics/insights</code></td><td>Latest AI insight digest (cached, refreshed weekly)</td><td>All roles</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/v1/projects</code></td><td>Create video project, get upload URL</td><td>Admin, Intern</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/v1/projects/{id}/generate</code></td><td>Trigger AI cut generation</td><td>Admin, Intern</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/v1/projects/{id}/candidates</code></td><td>Retrieve 3 AI-generated candidates</td><td>Admin, Intern</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/v1/projects/{id}/voice</code></td><td>Upload recorded voice track</td><td>Admin, Intern</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/v1/projects/{id}/export</code></td><td>Trigger render + export</td><td>Admin; Intern (non-Lea)</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/v1/projects/{id}/approve</code></td><td>Admin approves Lea intern export</td><td>Admin only</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/v1/projects/{id}/publish</code></td><td>Direct publish to social platform</td><td>Admin; Intern (non-Lea)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture">
+    <div class="section-label">08 — Technical Architecture</div>
+    <h1 class="section-title">System Design</h1>
+
+    <div class="arch-box">
+<span class="hl">┌──────────────────────────────────────────────────────────────────────────┐</span><br>
+<span class="hl">│               LEGALI VIDEO STUDIO · ARCHITECTURE v2.0                   │</span><br>
+<span class="hl">└──────────────────────────────────────────────────────────────────────────┘</span><br>
+<br>
+<span class="hl2">[ FRONTEND ]</span>  React / Next.js 14 · Tailwind · Remotion (video preview)<br>
+<span class="dim">  ├──</span> <span class="hl2">Onboarding Wizard</span>  <span class="dim">chat UI + visual config form · tanstack form</span><br>
+<span class="dim">  ├──</span> <span class="hl2">Analytics Dashboard</span> <span class="dim">recharts + tanstack query · brand/date filters</span><br>
+<span class="dim">  ├──</span> <span class="hl2">Studio Editor</span>      <span class="dim">Remotion Player + custom timeline · drag-and-drop</span><br>
+<span class="dim">  └──</span> <span class="hl2">Approval Queue</span>     <span class="dim">Lea intern draft review UI for Ira</span><br>
+<br>
+<span class="hl3">[ API GATEWAY ]</span>  FastAPI (Python) — Legali existing backend<br>
+<span class="dim">  ├──</span> /api/v1/brand-kits/*   <span class="dim">CRUD + onboarding state machine</span><br>
+<span class="dim">  ├──</span> /api/v1/analytics/*    <span class="dim">aggregation service + AI insight cache</span><br>
+<span class="dim">  ├──</span> /api/v1/projects/*     <span class="dim">video project lifecycle + approval workflow</span><br>
+<span class="dim">  └──</span> /api/v1/publish/*      <span class="dim">social platform dispatch</span><br>
+<br>
+<span class="gr">[ WORKER QUEUE ]</span>  Redis + Celery (async job processing)<br>
+<span class="dim">  ├──</span> <span class="gr">TranscriptionWorker</span>  <span class="dim">Whisper v3 · GPU instance · streams to frontend</span><br>
+<span class="dim">  ├──</span> <span class="gr">VisionWorker</span>         <span class="dim">GPT-4V frame sampling · parallel with transcription</span><br>
+<span class="dim">  ├──</span> <span class="gr">CutGenerationWorker</span>  <span class="dim">Claude API · 3-candidate output · JSON response</span><br>
+<span class="dim">  ├──</span> <span class="gr">SafetyCheckWorker</span>    <span class="dim">Claude API · trauma-informed pass · Lea only</span><br>
+<span class="dim">  ├──</span> <span class="gr">RenderWorker</span>         <span class="dim">FFmpeg + Remotion headless · target &lt;3min/60s</span><br>
+<span class="dim">  ├──</span> <span class="gr">VoiceWorker</span>          <span class="dim">Web Audio API noise removal · ElevenLabs (v1.1)</span><br>
+<span class="dim">  └──</span> <span class="gr">AnalyticsIngestor</span>    <span class="dim">cron per platform · normalizes to common schema</span><br>
+<br>
+<span class="hl">[ STORAGE ]</span><br>
+<span class="dim">  ├──</span> PostgreSQL + pgvector  <span class="dim">brand kits · projects · analytics · users</span><br>
+<span class="dim">  ├──</span> Supabase Storage       <span class="dim">raw video uploads (30-day lifecycle)</span><br>
+<span class="dim">  └──</span> Cloudflare R2          <span class="dim">rendered exports (12-month lifecycle, CDN)</span><br>
+<br>
+<span class="hl2">[ EXTERNAL APIs ]</span><br>
+<span class="dim">  ├──</span> Meta Graph API v19     <span class="dim">Instagram analytics + publishing</span><br>
+<span class="dim">  ├──</span> TikTok for Business v2 <span class="dim">TikTok analytics + publishing</span><br>
+<span class="dim">  ├──</span> LinkedIn Marketing v2  <span class="dim">LinkedIn analytics</span><br>
+<span class="dim">  ├──</span> OpenAI Whisper v3      <span class="dim">transcription · multilingual EN + ID</span><br>
+<span class="dim">  ├──</span> OpenAI GPT-4V          <span class="dim">frame-level visual scoring</span><br>
+<span class="dim">  ├──</span> Anthropic Claude       <span class="dim">cut generation · safety check · analytics insight</span><br>
+<span class="dim">  ├──</span> ElevenLabs Turbo v2.5  <span class="dim">voice synthesis + clone · v1.1 scope</span><br>
+<span class="dim">  └──</span> Resend                 <span class="dim">weekly insight digest email</span>
+    </div>
+
+    <h2 class="sub-title">8.1 — Non-Functional Requirements</h2>
+    <table class="prd-table">
+      <thead><tr><th>Requirement</th><th>Target</th><th>How</th></tr></thead>
+      <tbody>
+        <tr><td>Transcription time (10min clip)</td><td>&lt;90s</td><td>Whisper large-v3 on GPU instance</td></tr>
+        <tr><td>AI cut generation latency</td><td>&lt;30s from transcript</td><td>Claude API streaming, parallel vision worker</td></tr>
+        <tr><td>Safety check latency (Lea)</td><td>&lt;5s per candidate</td><td>Separate fast Claude call, non-blocking UI</td></tr>
+        <tr><td>Render time (60s video)</td><td>&lt;3 min</td><td>FFmpeg optimized pipeline, async progress stream</td></tr>
+        <tr><td>Analytics staleness</td><td>Max 6h (IG/TT), 12h (LinkedIn)</td><td>Cron workers with jitter to avoid rate limits</td></tr>
+        <tr><td>Upload max size</td><td>4GB per project</td><td>Chunked multipart to Supabase Storage</td></tr>
+        <tr><td>Uptime (internal tool)</td><td>99.5%</td><td>Supabase-managed infra + Vercel for frontend</td></tr>
+        <tr><td>Raw upload retention</td><td>30 days auto-delete</td><td>Supabase Storage lifecycle policy</td></tr>
+        <tr><td>Export retention</td><td>12 months</td><td>R2 lifecycle policy + Postgres URL reference</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <div class="section-label">09 — Roadmap</div>
+    <h1 class="section-title">12-Week Sprint Plan</h1>
+
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-phase">Weeks 1–2 · Sprint 1</div><div class="tl-title">Brand Onboarding (Module 0 MVP)</div><p class="tl-desc">Build the 7-question conversational onboarding UI. Brand kit schema + API. Visual config form. Lea defaults pre-loaded. Trauma-informed toggle. Internal test: Ira trains all 4 brand kits. Deliverable: complete brand kit for Lea, MyLegali, TeamLegali, LegaliLearn.</p></div>
+      <div class="tl-item"><div class="tl-dot pink"></div><div class="tl-phase pink">Weeks 3–4 · Sprint 2</div><div class="tl-title">Analytics Ingestion + Dashboard Shell</div><p class="tl-desc">Meta Graph API + TikTok API integration. analytics_snapshots ingestion cron. Analytics dashboard shell with KPI cards and trend charts. Brand/date filter. Deliverable: Ira and Rick can see 30 days of Instagram + TikTok data unified.</p></div>
+      <div class="tl-item"><div class="tl-dot blue"></div><div class="tl-phase blue">Weeks 5–7 · Sprint 3</div><div class="tl-title">Video Upload + AI Cut Generation</div><p class="tl-desc">Chunked upload pipeline. Whisper transcription worker. Vision scoring worker (GPT-4V). Claude cut generation prompt (3 candidates). Safety check worker (Lea). Studio UI: preview + candidate selector + basic timeline. Voice recording in browser. Deliverable: first AI-cut video export with Lea brand kit applied.</p></div>
+      <div class="tl-item"><div class="tl-dot"></div><div class="tl-phase">Weeks 8–9 · Sprint 4</div><div class="tl-title">Brand Engine + Full Export + Approvals</div><p class="tl-desc">Brand kit aesthetic rendering in FFmpeg/Remotion (colors, font, logo, transitions, captions). Multi-format export (9:16, 1:1, 4:5). Approval workflow: intern Lea draft → Ira approval queue. Direct publish to Instagram + TikTok. Deliverable: production-quality exported videos, publishable from Studio.</p></div>
+      <div class="tl-item"><div class="tl-dot green"></div><div class="tl-phase green">Weeks 10–12 · Sprint 5</div><div class="tl-title">AI Insights + LinkedIn + Polish</div><p class="tl-desc">LinkedIn analytics ingestion. Weekly AI insight digest email (Claude + Resend). Analytics attribution funnel (UTM → waitlist). Onboarding UX polish. Intern onboarding guide. Performance scorecard. Bug bash + load test. Deliverable: full internal v1.0 launch to Ira, Rick, Swapnil.</p></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- SUCCESS METRICS -->
+  <section id="success">
+    <div class="section-label">10 — Success Metrics</div>
+    <h1 class="section-title">How We Know It's Working</h1>
+
+    <div class="metric-row">
+      <div class="metric-box"><div class="metric-num">80%</div><div class="metric-label">Videos via Studio by wk 12</div></div>
+      <div class="metric-box"><div class="metric-num">&lt;2min</div><div class="metric-label">Time to first AI cut</div></div>
+      <div class="metric-box"><div class="metric-num">3×</div><div class="metric-label">Video output increase</div></div>
+      <div class="metric-box"><div class="metric-num">0</div><div class="metric-label">Unsafe Lea exports</div></div>
+      <div class="metric-box"><div class="metric-num">100%</div><div class="metric-label">Brand kit coverage</div></div>
+    </div>
+
+    <table class="prd-table">
+      <thead><tr><th>Metric</th><th>Baseline</th><th>Target (12wk)</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td>Avg watch-through rate (Reels)</td><td>~35%</td><td>&gt;50%</td><td>Instagram Insights API</td></tr>
+        <tr><td>Video output per week</td><td>~3–5</td><td>&gt;15</td><td>Studio export logs</td></tr>
+        <tr><td>Profile visits per reel</td><td>Manual tracking</td><td>+40% MoM</td><td>Analytics dashboard</td></tr>
+        <tr><td>Waitlist attributable to video</td><td>Unknown</td><td>Baseline established by wk 4</td><td>UTM tracking</td></tr>
+        <tr><td>Brand consistency score</td><td>Unmeasured</td><td>&gt;90% per scorecard</td><td>AI brand kit check on exports</td></tr>
+        <tr><td>Time from footage upload to export</td><td>2–4 hours (manual)</td><td>&lt;15 min (Studio)</td><td>Project timestamps</td></tr>
+        <tr><td>Trauma-informed safety pass rate (Lea)</td><td>N/A</td><td>100% — no unsafe exports</td><td>safety_check field in DB</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- RISKS -->
+  <section id="risks">
+    <div class="section-label">11 — Risks &amp; Mitigations</div>
+    <h1 class="section-title">Risk Register</h1>
+
+    <div class="risk-grid">
+      <div class="risk-row-item header-row"><div>Risk</div><div>Likelihood</div><div>Impact</div><div>Mitigation</div></div>
+      <div class="risk-row-item"><div><strong>Meta API rate limits</strong> block analytics refresh during peak ingestion</div><div><span class="rbadge med">Medium</span></div><div><span class="rbadge high">High</span></div><div class="mitigation">Cache aggressively per-post. Exponential backoff. Stagger cron calls with jitter. Surface stale-data warning in UI when snapshot &gt;12h old.</div></div>
+      <div class="risk-row-item"><div><strong>AI safety check miss</strong> — harmful caption passes to Lea export</div><div><span class="rbadge low">Low</span></div><div><span class="rbadge high">Critical</span></div><div class="mitigation">Two-pass safety: Claude call + regex keyword blocklist. Lea exports require Ira final approval for first 60 days. Weekly audit of all Lea AI-generated text.</div></div>
+      <div class="risk-row-item"><div><strong>Render pipeline too slow</strong> for intern daily usage</div><div><span class="rbadge med">Medium</span></div><div><span class="rbadge med">Medium</span></div><div class="mitigation">Async render with real-time progress bar. Pre-render low-res preview at 30% quality for fast review. Full-res render only on "Export" click.</div></div>
+      <div class="risk-row-item"><div><strong>TikTok API access</strong> delayed or denied during review</div><div><span class="rbadge low">Low</span></div><div><span class="rbadge med">Medium</span></div><div class="mitigation">Prioritize Instagram + LinkedIn for Sprint 2. TikTok as fallback to manual CSV export from TikTok Analytics UI, ingested via upload endpoint.</div></div>
+      <div class="risk-row-item"><div><strong>Intern publishes off-brand content</strong> under Lea without approval</div><div><span class="rbadge low">Low</span></div><div><span class="rbadge high">High</span></div><div class="mitigation">Lea brand exports are hard-blocked for Intern role at API level. Approval_status must be 'approved' before publish endpoint unlocks. No UI bypass possible.</div></div>
+      <div class="risk-row-item"><div><strong>Brand kit onboarding abandoned</strong> mid-flow by Ira</div><div><span class="rbadge med">Medium</span></div><div><span class="rbadge low">Low</span></div><div class="mitigation">onboarding_step field saves progress. User can resume at any time. Partial brand kits show "incomplete" badge and block Studio access until complete.</div></div>
+      <div class="risk-row-item"><div><strong>AI cut quality</strong> insufficient — team rejects AI candidates, reverts to manual</div><div><span class="rbadge med">Medium</span></div><div><span class="rbadge high">High</span></div><div class="mitigation">Run 5-video internal pilot in Sprint 3 before wider rollout. Collect preference feedback per candidate. Fine-tune scoring weights based on Ira's selections.</div></div>
+    </div>
+
+    <div class="callout green" style="margin-top:2rem;">
+      <strong>Build vs. Buy final call:</strong> No existing tool (Bevyl, OpusClip, Descript, CapCut for Business) satisfies all three non-negotiables: multi-brand brand kit enforcement + trauma-informed content safety + integrated social analytics. Estimated total engineering investment: Gilbert (full-stack lead, 12 weeks) + Swapnil (analytics pipeline + frontend, 12 weeks). External API cost estimate: Whisper ~$0.006/min, GPT-4V ~$0.01/frame, Claude API ~$0.02/cut generation, ElevenLabs $0.30/1k chars (v1.1 only).
+    </div>
+  </section>
+
+  <div style="text-align:center;padding:3rem 0 1rem;color:var(--muted);font-size:.72rem;font-family:'DM Mono',monospace;letter-spacing:.1em;">
+    LEGALI ARTIFICIAL INTELLIGENCE, INC. · SAN FRANCISCO · PRD v2.0 · JUNE 2026 · INTERNAL &amp; CONFIDENTIAL
+  </div>
+
+</div>
+</body>
+</html>
