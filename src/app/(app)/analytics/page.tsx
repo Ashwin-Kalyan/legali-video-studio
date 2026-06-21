@@ -16,23 +16,22 @@ import {
   IconCheck,
   IconArrowUpRight,
 } from "@tabler/icons-react";
-import { cn, formatCompact } from "@/lib/utils";
+import { cn, formatCompact, shortDate } from "@/lib/utils";
 import { Card, SectionLabel } from "@/components/ui/Card";
 import { PageHeader, BrandChip } from "@/components/ui/Misc";
 import { Tag } from "@/components/ui/Tag";
 import { PlatformIcon } from "@/components/ui/PlatformIcon";
 import {
-  OVERVIEW_KPIS,
-  KPI_SERIES_30D,
+  RANGE_DATA,
+  METRIC_META,
   BRAND_HEALTH,
   CONTENT_TYPE_STATS,
   PLATFORM_SPLIT,
   WAITLIST_FUNNEL,
-  AI_INSIGHT,
   ANALYTICS_SNAPSHOTS,
   BRAND_BY_SLUG,
 } from "@/lib/data";
-import type { BrandSlug } from "@/lib/types";
+import type { BrandSlug, AiInsight } from "@/lib/types";
 import { TrendChart } from "./_components/TrendChart";
 import { PlatformDonut } from "./_components/PlatformDonut";
 import { HealthRing } from "./_components/HealthRing";
@@ -40,9 +39,9 @@ import { KpiDetailModal } from "./_components/KpiDetailModal";
 
 // ---------------------------------------------------------------------------
 const RANGES = [
-  { id: "7d", label: "7d" },
-  { id: "30d", label: "30d" },
-  { id: "90d", label: "90d" },
+  { id: "7d", label: "1wk" },
+  { id: "30d", label: "1mo" },
+  { id: "90d", label: "3mos" },
 ] as const;
 type RangeId = (typeof RANGES)[number]["id"];
 
@@ -71,6 +70,7 @@ export default function AnalyticsPage() {
   const [activeKpi, setActiveKpi] = useState<string | null>(null);
 
   const activeBrand = BRAND_FILTERS.find((b) => b.id === brand)!;
+  const rd = RANGE_DATA[range];
 
   const topPosts = [...ANALYTICS_SNAPSHOTS]
     .sort((a, b) => b.views - a.views)
@@ -84,17 +84,24 @@ export default function AnalyticsPage() {
         subtitle="Cross-platform reach, engagement & waitlist attribution across all four Legali brands."
         actions={
           <div className="flex items-center gap-2">
-            {/* Time-range segmented control */}
-            <div className="flex items-center rounded-lg border border-rule bg-surface p-0.5 shadow-card">
+            {/* Time-range segmented control — with a sliding active indicator */}
+            <div className="relative flex items-center rounded-lg border border-rule bg-surface p-0.5 shadow-card">
+              <span
+                aria-hidden
+                className="pointer-events-none absolute bottom-0.5 top-0.5 rounded-md bg-ink shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                style={{
+                  width: "calc((100% - 0.25rem) / 3)",
+                  left: "0.125rem",
+                  transform: `translateX(${RANGES.findIndex((r) => r.id === range) * 100}%)`,
+                }}
+              />
               {RANGES.map((r) => (
                 <button
                   key={r.id}
                   onClick={() => setRange(r.id)}
                   className={cn(
-                    "rounded-md px-3 py-1.5 font-mono text-xs font-medium transition-colors",
-                    range === r.id
-                      ? "bg-ink text-paper shadow-sm"
-                      : "text-muted hover:text-ink",
+                    "relative z-10 flex-1 rounded-md px-3 py-1.5 font-mono text-xs font-medium transition-colors duration-200",
+                    range === r.id ? "text-paper" : "text-muted hover:text-ink",
                   )}
                 >
                   {r.label}
@@ -161,8 +168,16 @@ export default function AnalyticsPage() {
       />
 
       {/* ===== KPI ROW ===== */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {OVERVIEW_KPIS.map((kpi) => (
+      <div
+        key={range}
+        className="grid animate-fade-up grid-cols-2 gap-3 lg:grid-cols-4"
+      >
+        {rd.kpis.map((kpi) => {
+          const meta = METRIC_META[kpi.label];
+          const color = meta?.color ?? "#7c3aed";
+          const gradient =
+            meta?.gradient ?? "linear-gradient(90deg, #7c3aed, #db2777)";
+          return (
           <button
             key={kpi.label}
             type="button"
@@ -171,9 +186,13 @@ export default function AnalyticsPage() {
             className="group block w-full text-left transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2"
           >
             <Card
-              accent={kpi.positive ? "purple" : "amber"}
+              accent="none"
               className="h-full transition-shadow group-hover:shadow-card-lg"
             >
+              <div
+                className="absolute inset-x-0 top-0 h-[3px]"
+                style={{ background: gradient }}
+              />
               <div className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-muted">
@@ -198,7 +217,10 @@ export default function AnalyticsPage() {
                 <div className="mt-3 font-display text-[2.1rem] font-bold leading-none tracking-tight text-ink">
                   {kpi.value}
                 </div>
-                <div className="mt-2.5 flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-muted transition-colors group-hover:text-accent">
+                <div
+                  className="mt-2.5 flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.1em] opacity-60 transition-opacity group-hover:opacity-100"
+                  style={{ color }}
+                >
                   <IconArrowUpRight
                     size={12}
                     stroke={2}
@@ -209,7 +231,8 @@ export default function AnalyticsPage() {
               </div>
             </Card>
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {/* ===== TREND CHART + PLATFORM SPLIT ===== */}
@@ -233,8 +256,8 @@ export default function AnalyticsPage() {
               </span>
             </div>
           </div>
-          <div className="px-3 py-4">
-            <TrendChart data={KPI_SERIES_30D} />
+          <div key={range} className="animate-fade-up px-3 py-4">
+            <TrendChart data={rd.series} />
           </div>
         </Card>
 
@@ -254,7 +277,9 @@ export default function AnalyticsPage() {
       {/* ===== AI INSIGHT — HERO ===== */}
       <div className="mt-8">
         <SectionLabel>AI Insight Feed · Claude-powered</SectionLabel>
-        <AiInsightPanel />
+        <div key={range} className="animate-fade-up">
+          <AiInsightPanel insight={rd.insight} periodTitle={rd.periodTitle} />
+        </div>
       </div>
 
       {/* ===== BRAND HEALTH ===== */}
@@ -525,6 +550,7 @@ export default function AnalyticsPage() {
       {activeKpi && (
         <KpiDetailModal
           metricLabel={activeKpi}
+          range={range}
           onClose={() => setActiveKpi(null)}
         />
       )}
@@ -547,7 +573,13 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 // ---------------------------------------------------------------------------
-function AiInsightPanel() {
+function AiInsightPanel({
+  insight,
+  periodTitle,
+}: {
+  insight: AiInsight;
+  periodTitle: string;
+}) {
   return (
     <div
       className="relative overflow-hidden rounded-2xl border border-[#3a2061] shadow-card-lg"
@@ -564,15 +596,15 @@ function AiInsightPanel() {
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-[#d8b4fe]">
               <IconSparkles size={13} stroke={1.75} />
-              AI Insight · This week
+              AI Insight · {periodTitle}
             </div>
             <span className="font-mono text-[0.62rem] text-white/35">
-              Generated Jun 15
+              Generated {shortDate(insight.generatedAt)}
             </span>
           </div>
 
           <p className="mt-4 font-display text-xl font-medium leading-snug text-white">
-            {AI_INSIGHT.summary}
+            {insight.summary}
           </p>
 
           <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.04] p-4">
@@ -580,7 +612,7 @@ function AiInsightPanel() {
               Pattern detected
             </div>
             <p className="text-sm leading-relaxed text-white/80">
-              {AI_INSIGHT.pattern}
+              {insight.pattern}
             </p>
           </div>
 
@@ -591,7 +623,7 @@ function AiInsightPanel() {
               Recommended action
             </div>
             <p className="text-sm font-medium leading-relaxed text-white">
-              {AI_INSIGHT.action}
+              {insight.action}
             </p>
             <button className="mt-3.5 inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-sm font-semibold text-[#1e0a3c] transition-transform hover:scale-[1.02]">
               Draft these reels
@@ -606,7 +638,7 @@ function AiInsightPanel() {
             What worked this week
           </div>
           <ol className="space-y-3">
-            {AI_INSIGHT.observations.map((obs, i) => (
+            {insight.observations.map((obs, i) => (
               <li
                 key={i}
                 className="flex gap-3 rounded-xl border border-white/[0.07] bg-white/[0.03] p-3.5 transition-colors hover:bg-white/[0.06]"
@@ -628,7 +660,7 @@ function AiInsightPanel() {
                 Watch this metric
               </div>
               <p className="mt-1 text-[0.82rem] leading-relaxed text-white/80">
-                {AI_INSIGHT.watchMetric}
+                {insight.watchMetric}
               </p>
             </div>
           </div>

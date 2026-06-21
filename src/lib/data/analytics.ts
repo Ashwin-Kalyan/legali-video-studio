@@ -6,8 +6,88 @@ import type {
   Platform,
   ContentType,
 } from "@/lib/types";
+import { formatCompact } from "@/lib/utils";
 
 // Deterministic data (no Date.now / Math.random) to keep SSR + client in sync.
+
+// "Current day" anchor for the dashboard. Fixed (not `new Date()`) so the date
+// labels render identically on server + client, and so every range ends today.
+const APP_TODAY = { y: 2026, m: 5, d: 21 }; // Jun 21, 2026 (month is 0-indexed)
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Label for the day `daysAgo` before APP_TODAY — dayLabel(0) -> "Jun 21". */
+function dayLabel(daysAgo: number): string {
+  const ms = Date.UTC(APP_TODAY.y, APP_TODAY.m, APP_TODAY.d) - daysAgo * 86_400_000;
+  const d = new Date(ms);
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+
+/** Derive a KPI headline string from a series so cards always match the modal. */
+function deriveKpiValue(
+  series: KpiPoint[],
+  key: "views" | "engagements" | "waitlist" | "watchThru",
+  agg: "sum" | "avg",
+  unit: "compact" | "plain" | "percent",
+): string {
+  const vals = series.map((p) => p[key]);
+  const total = vals.reduce((a, b) => a + b, 0);
+  const v = agg === "sum" ? total : total / vals.length;
+  if (unit === "percent") return `${v.toFixed(1)}%`;
+  if (unit === "plain") return Math.round(v).toLocaleString("en-US");
+  return formatCompact(v);
+}
+
+interface KpiDelta {
+  delta: string;
+  positive: boolean;
+}
+
+function buildKpis(
+  series: KpiPoint[],
+  d: {
+    views: KpiDelta;
+    engagements: KpiDelta;
+    watchThru: KpiDelta;
+    waitlist: KpiDelta;
+  },
+): OverviewKpi[] {
+  return [
+    { label: "Total Views", value: deriveKpiValue(series, "views", "sum", "compact"), delta: d.views.delta, positive: d.views.positive },
+    { label: "Engagements", value: deriveKpiValue(series, "engagements", "sum", "compact"), delta: d.engagements.delta, positive: d.engagements.positive },
+    { label: "Avg Watch-thru", value: deriveKpiValue(series, "watchThru", "avg", "percent"), delta: d.watchThru.delta, positive: d.watchThru.positive },
+    { label: "Waitlist Clicks", value: deriveKpiValue(series, "waitlist", "sum", "plain"), delta: d.waitlist.delta, positive: d.waitlist.positive },
+  ];
+}
+
+// Per-metric visual identity — shared by the KPI cards and the detail modal so
+// each card's accent bar matches the color of its pop-up trend graph.
+export interface MetricMeta {
+  color: string;
+  accent: "purple" | "pink" | "blue" | "green";
+  gradient: string; // CSS gradient for the card accent bar
+}
+export const METRIC_META: Record<string, MetricMeta> = {
+  "Total Views": {
+    color: "#7c3aed",
+    accent: "purple",
+    gradient: "linear-gradient(90deg, #7c3aed 0%, #a855f7 50%, #db2777 100%)",
+  },
+  Engagements: {
+    color: "#db2777",
+    accent: "pink",
+    gradient: "linear-gradient(90deg, #db2777 0%, #f472b6 50%, #fb923c 100%)",
+  },
+  "Avg Watch-thru": {
+    color: "#0891b2",
+    accent: "blue",
+    gradient: "linear-gradient(90deg, #0891b2 0%, #22d3ee 50%, #2563eb 100%)",
+  },
+  "Waitlist Clicks": {
+    color: "#059669",
+    accent: "green",
+    gradient: "linear-gradient(90deg, #059669 0%, #34d399 50%, #0891b2 100%)",
+  },
+};
 
 // --- per-post analytics snapshots -----------------------------------------
 export const ANALYTICS_SNAPSHOTS: AnalyticsSnapshot[] = [
@@ -174,17 +254,19 @@ export const ANALYTICS_SNAPSHOTS: AnalyticsSnapshot[] = [
 ];
 
 // --- KPI time series (last 30 days, weekly buckets) ------------------------
+// Last 30 days — points every 3 days, ending today (May 22 → Jun 21).
 export const KPI_SERIES_30D: KpiPoint[] = [
-  { label: "May 19", views: 18400, engagements: 1120, waitlist: 12, watchThru: 6.8 },
-  { label: "May 22", views: 21200, engagements: 1340, waitlist: 18, watchThru: 7.0 },
-  { label: "May 25", views: 19800, engagements: 1210, waitlist: 15, watchThru: 6.5 },
-  { label: "May 28", views: 28600, engagements: 1880, waitlist: 24, watchThru: 6.7 },
-  { label: "May 31", views: 26100, engagements: 1640, waitlist: 21, watchThru: 6.4 },
-  { label: "Jun 3", views: 41800, engagements: 3210, waitlist: 58, watchThru: 6.6 },
-  { label: "Jun 6", views: 37400, engagements: 2740, waitlist: 44, watchThru: 6.2 },
-  { label: "Jun 9", views: 33900, engagements: 2380, waitlist: 38, watchThru: 6.0 },
-  { label: "Jun 12", views: 44600, engagements: 3480, waitlist: 49, watchThru: 6.3 },
-  { label: "Jun 15", views: 39200, engagements: 2910, waitlist: 33, watchThru: 5.9 },
+  { label: dayLabel(30), views: 22400, engagements: 1420, waitlist: 18, watchThru: 6.8 },
+  { label: dayLabel(27), views: 23800, engagements: 1510, waitlist: 22, watchThru: 7.0 },
+  { label: dayLabel(24), views: 25100, engagements: 1610, waitlist: 26, watchThru: 6.5 },
+  { label: dayLabel(21), views: 24200, engagements: 1540, waitlist: 24, watchThru: 6.7 },
+  { label: dayLabel(18), views: 31800, engagements: 2010, waitlist: 52, watchThru: 6.4 },
+  { label: dayLabel(15), views: 28400, engagements: 1820, waitlist: 40, watchThru: 6.6 },
+  { label: dayLabel(12), views: 26900, engagements: 1720, waitlist: 34, watchThru: 6.2 },
+  { label: dayLabel(9), views: 24600, engagements: 1560, waitlist: 28, watchThru: 6.0 },
+  { label: dayLabel(6), views: 23100, engagements: 1480, waitlist: 22, watchThru: 6.3 },
+  { label: dayLabel(3), views: 25800, engagements: 1640, waitlist: 26, watchThru: 6.1 },
+  { label: dayLabel(0), views: 28600, engagements: 1830, waitlist: 20, watchThru: 5.9 },
 ];
 
 export interface BrandHealth {
@@ -345,9 +427,145 @@ export interface OverviewKpi {
   positive: boolean;
 }
 
-export const OVERVIEW_KPIS: OverviewKpi[] = [
-  { label: "Total Views", value: "284K", delta: "↑ 34% vs prev", positive: true },
-  { label: "Engagements", value: "18.2K", delta: "↑ 21%", positive: true },
-  { label: "Avg Watch-thru", value: "6.4%", delta: "↓ 2%", positive: false },
-  { label: "Waitlist Clicks", value: "312", delta: "↑ 58%", positive: true },
+export const OVERVIEW_KPIS: OverviewKpi[] = buildKpis(KPI_SERIES_30D, {
+  views: { delta: "↑ 34% vs prev", positive: true },
+  engagements: { delta: "↑ 21%", positive: true },
+  watchThru: { delta: "↓ 2%", positive: false },
+  waitlist: { delta: "↑ 58%", positive: true },
+});
+
+// ---------------------------------------------------------------------------
+// Range-aware dashboard data — the 7d / 30d / 90d toggle drives the KPI cards,
+// the trend chart, the per-metric modal, and the AI insight digest.
+// ---------------------------------------------------------------------------
+export type DashRange = "7d" | "30d" | "90d";
+
+export interface RangeData {
+  id: DashRange;
+  shortLabel: string; // segmented-control label
+  periodTitle: string; // AI panel header ("This week")
+  series: KpiPoint[];
+  kpis: OverviewKpi[];
+  insight: AiInsight;
+}
+
+// --- Last 7 days (daily, Jun 14 → Jun 21) ----------------------------------
+const SERIES_7D: KpiPoint[] = [
+  { label: dayLabel(7), views: 9200, engagements: 700, waitlist: 7, watchThru: 6.0 },
+  { label: dayLabel(6), views: 11800, engagements: 910, waitlist: 10, watchThru: 5.9 },
+  { label: dayLabel(5), views: 10400, engagements: 810, waitlist: 9, watchThru: 6.1 },
+  { label: dayLabel(4), views: 9700, engagements: 690, waitlist: 7, watchThru: 5.8 },
+  { label: dayLabel(3), views: 12600, engagements: 980, waitlist: 12, watchThru: 6.2 },
+  { label: dayLabel(2), views: 13100, engagements: 1040, waitlist: 13, watchThru: 6.3 },
+  { label: dayLabel(1), views: 11200, engagements: 880, waitlist: 11, watchThru: 6.0 },
+  { label: dayLabel(0), views: 14300, engagements: 1120, waitlist: 15, watchThru: 6.4 },
 ];
+
+const KPIS_7D: OverviewKpi[] = buildKpis(SERIES_7D, {
+  views: { delta: "↑ 12% vs prev", positive: true },
+  engagements: { delta: "↑ 9%", positive: true },
+  watchThru: { delta: "↓ 3%", positive: false },
+  waitlist: { delta: "↑ 28%", positive: true },
+});
+
+const INSIGHT_7D: AiInsight = {
+  summary:
+    "Lea drove a record week — 58% of all waitlist signups in 7 days. Personal-story hooks beat stat-drop openers across every brand.",
+  observations: [
+    'Lea\'s "Is This Abuse?" reel (Jun 3) alone drove 58% of this week\'s waitlist clicks.',
+    'The hook "You might not even realize…" beat stat-drop openers by 2.4× on 7-day watch-through.',
+    "Saturday (Jun 14) posts underperformed weekday slots by 31% — consider pausing weekend scheduling.",
+  ],
+  pattern:
+    "Second-person, personal-story hooks in the first 3 seconds correlate with +2.4× watch-through this week.",
+  action:
+    "Ship 2 more Lea awareness reels before Friday using the personal-story hook; A/B one against a stat-drop control.",
+  watchMetric: "Lea Instagram 7-day watch-through — 6.1%, down 3% week-over-week.",
+  generatedAt: "2026-06-15T09:00:00Z",
+};
+
+// --- Last 90 days (weekly, Mar 23 → Jun 21) --------------------------------
+const SERIES_90D: KpiPoint[] = [
+  { label: dayLabel(90), views: 42000, engagements: 2700, waitlist: 16, watchThru: 5.2 },
+  { label: dayLabel(83), views: 44500, engagements: 2850, waitlist: 19, watchThru: 5.4 },
+  { label: dayLabel(76), views: 47000, engagements: 3000, waitlist: 22, watchThru: 5.5 },
+  { label: dayLabel(69), views: 49500, engagements: 3150, waitlist: 25, watchThru: 5.6 },
+  { label: dayLabel(62), views: 52000, engagements: 3300, waitlist: 28, watchThru: 5.8 },
+  { label: dayLabel(55), views: 54500, engagements: 3500, waitlist: 32, watchThru: 5.9 },
+  { label: dayLabel(48), views: 57000, engagements: 3700, waitlist: 36, watchThru: 6.0 },
+  { label: dayLabel(41), views: 59500, engagements: 3900, waitlist: 40, watchThru: 6.1 },
+  { label: dayLabel(34), views: 62000, engagements: 4100, waitlist: 45, watchThru: 6.2 },
+  { label: dayLabel(27), views: 65000, engagements: 4350, waitlist: 52, watchThru: 6.3 },
+  { label: dayLabel(20), views: 68000, engagements: 4600, waitlist: 60, watchThru: 6.4 },
+  { label: dayLabel(13), views: 71000, engagements: 4850, waitlist: 68, watchThru: 6.5 },
+  { label: dayLabel(6), views: 74000, engagements: 5100, waitlist: 76, watchThru: 6.6 },
+  { label: dayLabel(0), views: 78000, engagements: 5400, waitlist: 86, watchThru: 6.4 },
+];
+
+const KPIS_90D: OverviewKpi[] = buildKpis(SERIES_90D, {
+  views: { delta: "↑ 46% vs prev", positive: true },
+  engagements: { delta: "↑ 38%", positive: true },
+  watchThru: { delta: "↑ 9%", positive: true },
+  waitlist: { delta: "↑ 64%", positive: true },
+});
+
+const INSIGHT_90D: AiInsight = {
+  summary:
+    "Over the quarter, video became Legali's primary acquisition channel — 824K views and 605 waitlist signups, up 46% and 64% respectively.",
+  observations: [
+    "Waitlist signups grew 64% over 90 days, with Lea responsible for roughly 3 of every 5.",
+    "Watch-through climbed from 5.2% to 6.6% as the team standardized the 3-second hook formula.",
+    "MyLegali settled into a steady mid-funnel nurture role; TeamLegali stayed LinkedIn-only and flat.",
+  ],
+  pattern:
+    "Quarter-over-quarter, hook discipline (first-3s) is the single biggest lever on both watch-through and waitlist conversion.",
+  action:
+    "Codify the personal-story hook as the default Lea template and roll the formula into LegaliLearn next quarter.",
+  watchMetric:
+    "Quarterly watch-through trend — now 6.0% average and rising; protect it as volume scales.",
+  generatedAt: "2026-06-15T09:00:00Z",
+};
+
+// --- 30-day insight (monthly framing) --------------------------------------
+const INSIGHT_30D: AiInsight = {
+  summary:
+    "Across 30 days, Lea compounded into your growth engine — +34% views and 312 waitlist signups, 58% of them Lea's. Watch-through is the soft spot.",
+  observations: [
+    "Lea contributed 68% of net-new waitlist signups this month while posting only 41% of content.",
+    "Reels out-converted carousels 4:1 on profile visits; carousels still lead on saves (nurture, not discovery).",
+    "TikTok reach grew +44% month-over-month but lagged on link clicks — strong top-of-funnel, weak conversion.",
+  ],
+  pattern:
+    "Personal-story Reels drive discovery and conversion; carousels drive saves. Match format to funnel stage.",
+  action:
+    "Shift 2 of next month's carousels to awareness Reels for Lea; keep carousels for mid-funnel nurture.",
+  watchMetric: "Avg watch-through — 6.4%, down 2% month-over-month despite reach gains.",
+  generatedAt: "2026-06-15T09:00:00Z",
+};
+
+export const RANGE_DATA: Record<DashRange, RangeData> = {
+  "7d": {
+    id: "7d",
+    shortLabel: "1wk",
+    periodTitle: "This week",
+    series: SERIES_7D,
+    kpis: KPIS_7D,
+    insight: INSIGHT_7D,
+  },
+  "30d": {
+    id: "30d",
+    shortLabel: "1mo",
+    periodTitle: "This month",
+    series: KPI_SERIES_30D,
+    kpis: OVERVIEW_KPIS,
+    insight: INSIGHT_30D,
+  },
+  "90d": {
+    id: "90d",
+    shortLabel: "3mos",
+    periodTitle: "This quarter",
+    series: SERIES_90D,
+    kpis: KPIS_90D,
+    insight: INSIGHT_90D,
+  },
+};

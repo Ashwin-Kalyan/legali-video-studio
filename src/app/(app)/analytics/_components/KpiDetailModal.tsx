@@ -17,7 +17,7 @@ import {
   IconChartBar,
 } from "@tabler/icons-react";
 import { cn, formatCompact } from "@/lib/utils";
-import { KPI_SERIES_30D, OVERVIEW_KPIS } from "@/lib/data";
+import { RANGE_DATA, type DashRange } from "@/lib/data";
 import type { KpiPoint } from "@/lib/types";
 
 // Per-metric config: which series key, color, formatting, and how to aggregate.
@@ -27,7 +27,6 @@ interface MetricConfig {
   key: MetricKey;
   color: string;
   agg: "sum" | "avg";
-  aggLabel: string;
   unit: "compact" | "plain" | "percent";
   blurb: string;
 }
@@ -37,7 +36,6 @@ const METRICS: Record<string, MetricConfig> = {
     key: "views",
     color: "#7c3aed",
     agg: "sum",
-    aggLabel: "Total (30d)",
     unit: "compact",
     blurb: "Cross-platform video views across all four Legali brands.",
   },
@@ -45,7 +43,6 @@ const METRICS: Record<string, MetricConfig> = {
     key: "engagements",
     color: "#db2777",
     agg: "sum",
-    aggLabel: "Total (30d)",
     unit: "compact",
     blurb: "Likes, comments, shares and saves combined across platforms.",
   },
@@ -53,7 +50,6 @@ const METRICS: Record<string, MetricConfig> = {
     key: "watchThru",
     color: "#0891b2",
     agg: "avg",
-    aggLabel: "30-day average",
     unit: "percent",
     blurb: "Average share of each video watched, weighted by views.",
   },
@@ -61,7 +57,6 @@ const METRICS: Record<string, MetricConfig> = {
     key: "waitlist",
     color: "#059669",
     agg: "sum",
-    aggLabel: "Total (30d)",
     unit: "plain",
     blurb: "Bio-link clicks attributed to video content (UTM tracked).",
   },
@@ -75,9 +70,11 @@ function fmt(v: number, unit: MetricConfig["unit"]): string {
 
 export function KpiDetailModal({
   metricLabel,
+  range,
   onClose,
 }: {
   metricLabel: string;
+  range: DashRange;
   onClose: () => void;
 }) {
   // Esc to close + lock background scroll while open
@@ -95,10 +92,14 @@ export function KpiDetailModal({
   }, [onClose]);
 
   const cfg = METRICS[metricLabel];
-  const headline = OVERVIEW_KPIS.find((k) => k.label === metricLabel);
+  const rd = RANGE_DATA[range];
+  const headline = rd.kpis.find((k) => k.label === metricLabel);
   if (!cfg || !headline) return null;
 
-  const series = KPI_SERIES_30D.map((p) => ({
+  const aggLabel =
+    cfg.agg === "sum" ? `Total · ${rd.shortLabel}` : `Average · ${rd.shortLabel}`;
+
+  const series = rd.series.map((p) => ({
     label: p.label,
     value: p[cfg.key] as number,
   }));
@@ -112,7 +113,7 @@ export function KpiDetailModal({
   const lowDay = series.find((s) => s.value === low)?.label ?? "—";
 
   const stats = [
-    { label: cfg.aggLabel, value: fmt(aggValue, cfg.unit) },
+    { label: aggLabel, value: fmt(aggValue, cfg.unit) },
     { label: `Peak · ${peakDay}`, value: fmt(peak, cfg.unit) },
     { label: `Lowest · ${lowDay}`, value: fmt(low, cfg.unit) },
   ];
@@ -173,7 +174,7 @@ export function KpiDetailModal({
             {headline.delta.replace(/^[↑↓]\s*/, "")}
           </span>
           <span className="mb-1 font-mono text-[0.66rem] text-muted">
-            vs previous 30 days
+            vs previous {rd.shortLabel}
           </span>
         </div>
 
@@ -190,7 +191,8 @@ export function KpiDetailModal({
               <CartesianGrid strokeDasharray="3 3" stroke="#e2ddd9" vertical={false} />
               <XAxis
                 dataKey="label"
-                interval={0}
+                interval="preserveStartEnd"
+                minTickGap={16}
                 padding={{ left: 6, right: 14 }}
                 tickMargin={8}
                 tick={{ fontSize: 11, fill: "#6b6575", fontFamily: "var(--font-mono)" }}
