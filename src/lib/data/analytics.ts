@@ -175,16 +175,16 @@ export const ANALYTICS_SNAPSHOTS: AnalyticsSnapshot[] = [
 
 // --- KPI time series (last 30 days, weekly buckets) ------------------------
 export const KPI_SERIES_30D: KpiPoint[] = [
-  { label: "May 19", views: 18400, engagements: 1120, waitlist: 12 },
-  { label: "May 22", views: 21200, engagements: 1340, waitlist: 18 },
-  { label: "May 25", views: 19800, engagements: 1210, waitlist: 15 },
-  { label: "May 28", views: 28600, engagements: 1880, waitlist: 24 },
-  { label: "May 31", views: 26100, engagements: 1640, waitlist: 21 },
-  { label: "Jun 3", views: 41800, engagements: 3210, waitlist: 58 },
-  { label: "Jun 6", views: 37400, engagements: 2740, waitlist: 44 },
-  { label: "Jun 9", views: 33900, engagements: 2380, waitlist: 38 },
-  { label: "Jun 12", views: 44600, engagements: 3480, waitlist: 49 },
-  { label: "Jun 15", views: 39200, engagements: 2910, waitlist: 33 },
+  { label: "May 19", views: 18400, engagements: 1120, waitlist: 12, watchThru: 6.8 },
+  { label: "May 22", views: 21200, engagements: 1340, waitlist: 18, watchThru: 7.0 },
+  { label: "May 25", views: 19800, engagements: 1210, waitlist: 15, watchThru: 6.5 },
+  { label: "May 28", views: 28600, engagements: 1880, waitlist: 24, watchThru: 6.7 },
+  { label: "May 31", views: 26100, engagements: 1640, waitlist: 21, watchThru: 6.4 },
+  { label: "Jun 3", views: 41800, engagements: 3210, waitlist: 58, watchThru: 6.6 },
+  { label: "Jun 6", views: 37400, engagements: 2740, waitlist: 44, watchThru: 6.2 },
+  { label: "Jun 9", views: 33900, engagements: 2380, waitlist: 38, watchThru: 6.0 },
+  { label: "Jun 12", views: 44600, engagements: 3480, waitlist: 49, watchThru: 6.3 },
+  { label: "Jun 15", views: 39200, engagements: 2910, waitlist: 33, watchThru: 5.9 },
 ];
 
 export interface BrandHealth {

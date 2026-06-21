@@ -174,6 +174,7 @@ export interface KpiPoint {
   views: number;
   engagements: number;
   waitlist: number;
+  watchThru: number; // avg watch-through %
 }
 
 // --- AI insight digest -----------------------------------------------------

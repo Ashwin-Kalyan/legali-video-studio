@@ -14,6 +14,7 @@ import {
   IconLink,
   IconCircleCheck,
   IconCheck,
+  IconArrowUpRight,
 } from "@tabler/icons-react";
 import { cn, formatCompact } from "@/lib/utils";
 import { Card, SectionLabel } from "@/components/ui/Card";
@@ -35,6 +36,7 @@ import type { BrandSlug } from "@/lib/types";
 import { TrendChart } from "./_components/TrendChart";
 import { PlatformDonut } from "./_components/PlatformDonut";
 import { HealthRing } from "./_components/HealthRing";
+import { KpiDetailModal } from "./_components/KpiDetailModal";
 
 // ---------------------------------------------------------------------------
 const RANGES = [
@@ -66,6 +68,7 @@ export default function AnalyticsPage() {
   const [range, setRange] = useState<RangeId>("30d");
   const [brand, setBrand] = useState<BrandSlug | "all">("all");
   const [brandOpen, setBrandOpen] = useState(false);
+  const [activeKpi, setActiveKpi] = useState<string | null>(null);
 
   const activeBrand = BRAND_FILTERS.find((b) => b.id === brand)!;
 
@@ -160,33 +163,52 @@ export default function AnalyticsPage() {
       {/* ===== KPI ROW ===== */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {OVERVIEW_KPIS.map((kpi) => (
-          <Card key={kpi.label} accent={kpi.positive ? "purple" : "amber"}>
-            <div className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-muted">
-                  {kpi.label}
+          <button
+            key={kpi.label}
+            type="button"
+            onClick={() => setActiveKpi(kpi.label)}
+            aria-label={`View ${kpi.label} over time`}
+            className="group block w-full text-left transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2"
+          >
+            <Card
+              accent={kpi.positive ? "purple" : "amber"}
+              className="h-full transition-shadow group-hover:shadow-card-lg"
+            >
+              <div className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="font-mono text-[0.64rem] uppercase tracking-[0.14em] text-muted">
+                    {kpi.label}
+                  </div>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-mono text-[0.64rem] font-semibold",
+                      kpi.positive
+                        ? "bg-success-soft text-success-ink"
+                        : "bg-warn-soft text-[#b91c1c]",
+                    )}
+                  >
+                    {kpi.positive ? (
+                      <IconTrendingUp size={12} stroke={2} />
+                    ) : (
+                      <IconTrendingDown size={12} stroke={2} />
+                    )}
+                    {kpi.delta.replace(/^[↑↓]\s*/, "")}
+                  </span>
                 </div>
-                <span
-                  className={cn(
-                    "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 font-mono text-[0.64rem] font-semibold",
-                    kpi.positive
-                      ? "bg-success-soft text-success-ink"
-                      : "bg-warn-soft text-[#b91c1c]",
-                  )}
-                >
-                  {kpi.positive ? (
-                    <IconTrendingUp size={12} stroke={2} />
-                  ) : (
-                    <IconTrendingDown size={12} stroke={2} />
-                  )}
-                  {kpi.delta.replace(/^[↑↓]\s*/, "")}
-                </span>
+                <div className="mt-3 font-display text-[2.1rem] font-bold leading-none tracking-tight text-ink">
+                  {kpi.value}
+                </div>
+                <div className="mt-2.5 flex items-center gap-1 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-muted transition-colors group-hover:text-accent">
+                  <IconArrowUpRight
+                    size={12}
+                    stroke={2}
+                    className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  />
+                  View over time
+                </div>
               </div>
-              <div className="mt-3 font-display text-[2.1rem] font-bold leading-none tracking-tight text-ink">
-                {kpi.value}
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </button>
         ))}
       </div>
 
@@ -498,6 +520,14 @@ export default function AnalyticsPage() {
           })}
         </div>
       </div>
+
+      {/* ===== PER-METRIC TREND MODAL ===== */}
+      {activeKpi && (
+        <KpiDetailModal
+          metricLabel={activeKpi}
+          onClose={() => setActiveKpi(null)}
+        />
+      )}
     </div>
   );
 }
