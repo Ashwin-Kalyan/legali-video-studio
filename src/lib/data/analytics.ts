@@ -256,17 +256,17 @@ export const ANALYTICS_SNAPSHOTS: AnalyticsSnapshot[] = [
 // --- KPI time series (last 30 days, weekly buckets) ------------------------
 // Last 30 days — points every 3 days, ending today (May 22 → Jun 21).
 export const KPI_SERIES_30D: KpiPoint[] = [
-  { label: dayLabel(30), views: 22400, engagements: 1420, waitlist: 18, watchThru: 6.8 },
-  { label: dayLabel(27), views: 23800, engagements: 1510, waitlist: 22, watchThru: 7.0 },
-  { label: dayLabel(24), views: 25100, engagements: 1610, waitlist: 26, watchThru: 6.5 },
-  { label: dayLabel(21), views: 24200, engagements: 1540, waitlist: 24, watchThru: 6.7 },
-  { label: dayLabel(18), views: 31800, engagements: 2010, waitlist: 52, watchThru: 6.4 },
-  { label: dayLabel(15), views: 28400, engagements: 1820, waitlist: 40, watchThru: 6.6 },
-  { label: dayLabel(12), views: 26900, engagements: 1720, waitlist: 34, watchThru: 6.2 },
-  { label: dayLabel(9), views: 24600, engagements: 1560, waitlist: 28, watchThru: 6.0 },
-  { label: dayLabel(6), views: 23100, engagements: 1480, waitlist: 22, watchThru: 6.3 },
-  { label: dayLabel(3), views: 25800, engagements: 1640, waitlist: 26, watchThru: 6.1 },
-  { label: dayLabel(0), views: 28600, engagements: 1830, waitlist: 20, watchThru: 5.9 },
+  { label: dayLabel(30), views: 22400, engagements: 1420, waitlist: 18, watchThru: 6.8, subscribers: 118200 },
+  { label: dayLabel(27), views: 23800, engagements: 1510, waitlist: 22, watchThru: 7.0, subscribers: 119500 },
+  { label: dayLabel(24), views: 25100, engagements: 1610, waitlist: 26, watchThru: 6.5, subscribers: 120800 },
+  { label: dayLabel(21), views: 24200, engagements: 1540, waitlist: 24, watchThru: 6.7, subscribers: 121900 },
+  { label: dayLabel(18), views: 31800, engagements: 2010, waitlist: 52, watchThru: 6.4, subscribers: 123000 },
+  { label: dayLabel(15), views: 28400, engagements: 1820, waitlist: 40, watchThru: 6.6, subscribers: 124100 },
+  { label: dayLabel(12), views: 26900, engagements: 1720, waitlist: 34, watchThru: 6.2, subscribers: 125000 },
+  { label: dayLabel(9), views: 24600, engagements: 1560, waitlist: 28, watchThru: 6.0, subscribers: 125900 },
+  { label: dayLabel(6), views: 23100, engagements: 1480, waitlist: 22, watchThru: 6.3, subscribers: 126700 },
+  { label: dayLabel(3), views: 25800, engagements: 1640, waitlist: 26, watchThru: 6.1, subscribers: 127600 },
+  { label: dayLabel(0), views: 28600, engagements: 1830, waitlist: 20, watchThru: 5.9, subscribers: 128400 },
 ];
 
 export interface BrandHealth {
@@ -451,14 +451,14 @@ export interface RangeData {
 
 // --- Last 7 days (daily, Jun 14 → Jun 21) ----------------------------------
 const SERIES_7D: KpiPoint[] = [
-  { label: dayLabel(7), views: 9200, engagements: 700, waitlist: 7, watchThru: 6.0 },
-  { label: dayLabel(6), views: 11800, engagements: 910, waitlist: 10, watchThru: 5.9 },
-  { label: dayLabel(5), views: 10400, engagements: 810, waitlist: 9, watchThru: 6.1 },
-  { label: dayLabel(4), views: 9700, engagements: 690, waitlist: 7, watchThru: 5.8 },
-  { label: dayLabel(3), views: 12600, engagements: 980, waitlist: 12, watchThru: 6.2 },
-  { label: dayLabel(2), views: 13100, engagements: 1040, waitlist: 13, watchThru: 6.3 },
-  { label: dayLabel(1), views: 11200, engagements: 880, waitlist: 11, watchThru: 6.0 },
-  { label: dayLabel(0), views: 14300, engagements: 1120, waitlist: 15, watchThru: 6.4 },
+  { label: dayLabel(7), views: 9200, engagements: 700, waitlist: 7, watchThru: 6.0, subscribers: 125600 },
+  { label: dayLabel(6), views: 11800, engagements: 910, waitlist: 10, watchThru: 5.9, subscribers: 126100 },
+  { label: dayLabel(5), views: 10400, engagements: 810, waitlist: 9, watchThru: 6.1, subscribers: 126600 },
+  { label: dayLabel(4), views: 9700, engagements: 690, waitlist: 7, watchThru: 5.8, subscribers: 127000 },
+  { label: dayLabel(3), views: 12600, engagements: 980, waitlist: 12, watchThru: 6.2, subscribers: 127500 },
+  { label: dayLabel(2), views: 13100, engagements: 1040, waitlist: 13, watchThru: 6.3, subscribers: 127900 },
+  { label: dayLabel(1), views: 11200, engagements: 880, waitlist: 11, watchThru: 6.0, subscribers: 128150 },
+  { label: dayLabel(0), views: 14300, engagements: 1120, waitlist: 15, watchThru: 6.4, subscribers: 128400 },
 ];
 
 const KPIS_7D: OverviewKpi[] = buildKpis(SERIES_7D, {
@@ -486,20 +486,20 @@ const INSIGHT_7D: AiInsight = {
 
 // --- Last 90 days (weekly, Mar 23 → Jun 21) --------------------------------
 const SERIES_90D: KpiPoint[] = [
-  { label: dayLabel(90), views: 42000, engagements: 2700, waitlist: 16, watchThru: 5.2 },
-  { label: dayLabel(83), views: 44500, engagements: 2850, waitlist: 19, watchThru: 5.4 },
-  { label: dayLabel(76), views: 47000, engagements: 3000, waitlist: 22, watchThru: 5.5 },
-  { label: dayLabel(69), views: 49500, engagements: 3150, waitlist: 25, watchThru: 5.6 },
-  { label: dayLabel(62), views: 52000, engagements: 3300, waitlist: 28, watchThru: 5.8 },
-  { label: dayLabel(55), views: 54500, engagements: 3500, waitlist: 32, watchThru: 5.9 },
-  { label: dayLabel(48), views: 57000, engagements: 3700, waitlist: 36, watchThru: 6.0 },
-  { label: dayLabel(41), views: 59500, engagements: 3900, waitlist: 40, watchThru: 6.1 },
-  { label: dayLabel(34), views: 62000, engagements: 4100, waitlist: 45, watchThru: 6.2 },
-  { label: dayLabel(27), views: 65000, engagements: 4350, waitlist: 52, watchThru: 6.3 },
-  { label: dayLabel(20), views: 68000, engagements: 4600, waitlist: 60, watchThru: 6.4 },
-  { label: dayLabel(13), views: 71000, engagements: 4850, waitlist: 68, watchThru: 6.5 },
-  { label: dayLabel(6), views: 74000, engagements: 5100, waitlist: 76, watchThru: 6.6 },
-  { label: dayLabel(0), views: 78000, engagements: 5400, waitlist: 86, watchThru: 6.4 },
+  { label: dayLabel(90), views: 42000, engagements: 2700, waitlist: 16, watchThru: 5.2, subscribers: 78000 },
+  { label: dayLabel(83), views: 44500, engagements: 2850, waitlist: 19, watchThru: 5.4, subscribers: 82000 },
+  { label: dayLabel(76), views: 47000, engagements: 3000, waitlist: 22, watchThru: 5.5, subscribers: 85500 },
+  { label: dayLabel(69), views: 49500, engagements: 3150, waitlist: 25, watchThru: 5.6, subscribers: 89000 },
+  { label: dayLabel(62), views: 52000, engagements: 3300, waitlist: 28, watchThru: 5.8, subscribers: 92500 },
+  { label: dayLabel(55), views: 54500, engagements: 3500, waitlist: 32, watchThru: 5.9, subscribers: 96000 },
+  { label: dayLabel(48), views: 57000, engagements: 3700, waitlist: 36, watchThru: 6.0, subscribers: 99500 },
+  { label: dayLabel(41), views: 59500, engagements: 3900, waitlist: 40, watchThru: 6.1, subscribers: 103500 },
+  { label: dayLabel(34), views: 62000, engagements: 4100, waitlist: 45, watchThru: 6.2, subscribers: 107000 },
+  { label: dayLabel(27), views: 65000, engagements: 4350, waitlist: 52, watchThru: 6.3, subscribers: 111000 },
+  { label: dayLabel(20), views: 68000, engagements: 4600, waitlist: 60, watchThru: 6.4, subscribers: 115500 },
+  { label: dayLabel(13), views: 71000, engagements: 4850, waitlist: 68, watchThru: 6.5, subscribers: 120000 },
+  { label: dayLabel(6), views: 74000, engagements: 5100, waitlist: 76, watchThru: 6.6, subscribers: 124500 },
+  { label: dayLabel(0), views: 78000, engagements: 5400, waitlist: 86, watchThru: 6.4, subscribers: 128400 },
 ];
 
 const KPIS_90D: OverviewKpi[] = buildKpis(SERIES_90D, {

@@ -15,6 +15,7 @@ import {
   IconCircleCheck,
   IconCheck,
   IconArrowUpRight,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { cn, formatCompact, shortDate } from "@/lib/utils";
 import { Card, SectionLabel } from "@/components/ui/Card";
@@ -68,9 +69,42 @@ export default function AnalyticsPage() {
   const [brand, setBrand] = useState<BrandSlug | "all">("all");
   const [brandOpen, setBrandOpen] = useState(false);
   const [activeKpi, setActiveKpi] = useState<string | null>(null);
+  const [aiOverride, setAiOverride] = useState<{
+    range: RangeId;
+    insight: AiInsight;
+    source: string;
+  } | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const activeBrand = BRAND_FILTERS.find((b) => b.id === brand)!;
   const rd = RANGE_DATA[range];
+  const subsNow = rd.series[rd.series.length - 1].subscribers;
+  const subsGain = subsNow - rd.series[0].subscribers;
+  const periodWord = rd.periodTitle.replace(/^This\s+/i, "").toLowerCase();
+
+  // Live AI insight: Gemini result for the current range, else the sample.
+  const liveInsight =
+    aiOverride?.range === range ? aiOverride.insight : rd.insight;
+  const aiSource = aiOverride?.range === range ? aiOverride.source : null;
+
+  async function regenerateInsight() {
+    setAiLoading(true);
+    try {
+      const res = await fetch("/api/insights", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ range }),
+      });
+      const data = await res.json();
+      if (data?.insight) {
+        setAiOverride({ range, insight: data.insight, source: data.source });
+      }
+    } catch {
+      /* keep the existing insight on failure */
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   const topPosts = [...ANALYTICS_SNAPSHOTS]
     .sort((a, b) => b.views - a.views)
@@ -240,20 +274,19 @@ export default function AnalyticsPage() {
         <Card>
           <div className="flex items-center justify-between border-b border-rule px-5 py-4">
             <div>
-              <SectionLabel className="mb-1">Reach Trend</SectionLabel>
+              <SectionLabel className="mb-1">Audience Growth</SectionLabel>
               <h3 className="font-display text-lg font-bold text-ink">
-                Views & engagement over time
+                Subscribers over time
               </h3>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="flex items-center gap-1.5 font-mono text-[0.68rem] text-muted">
-                <span className="h-2.5 w-2.5 rounded-sm bg-gradient-to-r from-accent to-pink" />
-                Views
-              </span>
-              <span className="flex items-center gap-1.5 font-mono text-[0.68rem] text-muted">
-                <span className="h-0 w-3.5 border-t-2 border-dashed border-pink" />
-                Engagements
-              </span>
+            <div className="text-right">
+              <div className="font-display text-xl font-bold leading-none text-ink">
+                {formatCompact(subsNow)}
+              </div>
+              <div className="mt-1 inline-flex items-center gap-1 font-mono text-[0.66rem] font-semibold text-success">
+                <IconTrendingUp size={12} stroke={2} />
+                +{formatCompact(subsGain)} this {periodWord}
+              </div>
             </div>
           </div>
           <div key={range} className="animate-fade-up px-3 py-4">
@@ -276,9 +309,15 @@ export default function AnalyticsPage() {
 
       {/* ===== AI INSIGHT — HERO ===== */}
       <div className="mt-8">
-        <SectionLabel>AI Insight Feed · Claude-powered</SectionLabel>
-        <div key={range} className="animate-fade-up">
-          <AiInsightPanel insight={rd.insight} periodTitle={rd.periodTitle} />
+        <SectionLabel>AI Insight Feed · Gemini-powered</SectionLabel>
+        <div className="animate-fade-up">
+          <AiInsightPanel
+            insight={liveInsight}
+            periodTitle={rd.periodTitle}
+            source={aiSource}
+            loading={aiLoading}
+            onRegenerate={regenerateInsight}
+          />
         </div>
       </div>
 
@@ -576,9 +615,15 @@ function Metric({ label, value }: { label: string; value: string }) {
 function AiInsightPanel({
   insight,
   periodTitle,
+  source,
+  loading,
+  onRegenerate,
 }: {
   insight: AiInsight;
   periodTitle: string;
+  source: string | null;
+  loading: boolean;
+  onRegenerate: () => void;
 }) {
   return (
     <div
@@ -593,14 +638,48 @@ function AiInsightPanel({
       <div className="relative grid grid-cols-1 gap-6 p-6 md:p-7 lg:grid-cols-[1.1fr_1fr]">
         {/* LEFT — summary + pattern */}
         <div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 font-mono text-[0.66rem] uppercase tracking-[0.16em] text-[#d8b4fe]">
               <IconSparkles size={13} stroke={1.75} />
               AI Insight · {periodTitle}
             </div>
-            <span className="font-mono text-[0.62rem] text-white/35">
-              Generated {shortDate(insight.generatedAt)}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="hidden font-mono text-[0.6rem] text-white/35 sm:inline">
+                {shortDate(insight.generatedAt)}
+              </span>
+              {source && (
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 font-mono text-[0.56rem] uppercase tracking-wide",
+                    source === "instagram"
+                      ? "bg-[#34d399]/15 text-[#6ee7b7]"
+                      : source === "error"
+                        ? "bg-amber-400/15 text-amber-300"
+                        : "bg-white/10 text-white/55",
+                  )}
+                >
+                  {source === "instagram"
+                    ? "✦ Live · Instagram"
+                    : source === "gemini"
+                      ? "Gemini · sample data"
+                      : source === "error"
+                        ? "Fallback · check key"
+                        : "Sample data"}
+                </span>
+              )}
+              <button
+                onClick={onRegenerate}
+                disabled={loading}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/10 px-2.5 py-1 font-mono text-[0.62rem] font-medium text-white transition-colors hover:bg-white/20 disabled:opacity-60"
+              >
+                <IconRefresh
+                  size={12}
+                  stroke={2}
+                  className={loading ? "animate-spin" : ""}
+                />
+                {loading ? "Generating…" : "Regenerate"}
+              </button>
+            </div>
           </div>
 
           <p className="mt-4 font-display text-xl font-medium leading-snug text-white">

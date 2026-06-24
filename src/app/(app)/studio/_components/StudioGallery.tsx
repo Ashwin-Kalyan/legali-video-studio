@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   IconPlus,
   IconX,
@@ -14,6 +15,7 @@ import {
   IconClock,
   IconSparkles,
   IconVideo,
+  IconLoader2,
 } from "@tabler/icons-react";
 import { PageHeader, BrandChip } from "@/components/ui/Misc";
 import { Button } from "@/components/ui/Button";
@@ -226,36 +228,149 @@ export function StudioGallery() {
 }
 
 // ---------------------------------------------------------------------------
-// Upload dropzone (faux, PRD step 1)
+// Upload dropzone — real file picker (opens Finder), drag-drop, brand select.
+// On upload it creates a project and jumps into the live AI editor.
 // ---------------------------------------------------------------------------
+const UPLOAD_BRANDS: { slug: BrandSlug; label: string }[] = [
+  { slug: "lea", label: "Lea" },
+  { slug: "my", label: "MyLegali" },
+  { slug: "team", label: "TeamLegali" },
+  { slug: "learn", label: "LegaliLearn" },
+];
+
 function UploadDropzone() {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [brand, setBrand] = useState<BrandSlug>("lea");
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleFile(file: File) {
+    if (!file.type.startsWith("video/")) {
+      setError("Please choose a video file (MP4, MOV, etc.)");
+      return;
+    }
+    setError(null);
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("brand", brand);
+      const res = await fetch("/api/studio/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.id) {
+        router.push(`/studio/ai/${data.id}`);
+      } else {
+        setError(data.error || "Upload failed");
+        setUploading(false);
+      }
+    } catch (e) {
+      setError(String(e));
+      setUploading(false);
+    }
+  }
+
   return (
-    <div className="mb-7 animate-fade-up rounded-2xl border border-rule bg-surface p-1.5 shadow-card">
-      <div className="rounded-xl border-2 border-dashed border-accent/40 bg-gradient-to-b from-accent-soft/60 to-surface px-6 py-10 text-center">
+    <div className="mb-7 animate-fade-up overflow-hidden rounded-2xl border border-rule bg-surface p-1.5 shadow-card">
+      <input
+        ref={inputRef}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleFile(f);
+          e.target.value = "";
+        }}
+      />
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => !uploading && inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if ((e.key === "Enter" || e.key === " ") && !uploading)
+            inputRef.current?.click();
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const f = e.dataTransfer.files?.[0];
+          if (f && !uploading) handleFile(f);
+        }}
+        className={cn(
+          "cursor-pointer rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
+          uploading
+            ? "border-accent/40 bg-accent-soft/40"
+            : dragOver
+              ? "border-accent bg-accent-soft"
+              : "border-accent/40 bg-gradient-to-b from-accent-soft/60 to-surface hover:border-accent",
+        )}
+      >
         <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-card">
-          <IconUpload size={26} stroke={1.6} className="text-accent" />
+          {uploading ? (
+            <IconLoader2 size={26} stroke={1.8} className="animate-spin text-accent" />
+          ) : (
+            <IconUpload size={26} stroke={1.6} className="text-accent" />
+          )}
         </span>
         <p className="font-display text-xl font-bold text-ink">
-          Drop your raw footage here
+          {uploading ? "Uploading & starting the AI…" : "Drop your raw footage here"}
         </p>
-        <p className="mt-1.5 text-sm text-muted">
-          or{" "}
-          <span className="font-medium text-accent underline-offset-2 hover:underline">
-            browse files
-          </span>{" "}
-          — chunked upload to Supabase Storage
-        </p>
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-          <Tag tone="neutral">MP4</Tag>
-          <Tag tone="neutral">MOV</Tag>
-          <Tag tone="neutral">HEVC</Tag>
-          <span className="font-mono text-[0.7rem] text-muted">up to 4GB</span>
-        </div>
-        <div className="mx-auto mt-5 flex max-w-md items-center justify-center gap-2 rounded-lg border border-rule bg-white/70 px-3 py-2 text-xs text-muted">
-          <IconSparkles size={14} stroke={1.75} className="text-accent" />
-          Auto-transcription (Whisper v3) starts the moment upload completes.
-        </div>
+        {uploading ? (
+          <p className="mt-1.5 text-sm text-muted">
+            You&apos;ll jump straight into the edit when it&apos;s ready.
+          </p>
+        ) : (
+          <>
+            <p className="mt-1.5 text-sm text-muted">
+              or{" "}
+              <span className="font-medium text-accent underline-offset-2 hover:underline">
+                browse files
+              </span>{" "}
+              — Gemini watches it and FFmpeg cuts it for you
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <Tag tone="neutral">MP4</Tag>
+              <Tag tone="neutral">MOV</Tag>
+              <Tag tone="neutral">WEBM</Tag>
+              <span className="font-mono text-[0.7rem] text-muted">up to 300MB</span>
+            </div>
+          </>
+        )}
       </div>
+
+      {!uploading && (
+        <div className="flex flex-wrap items-center justify-center gap-2 px-4 py-3">
+          <span className="font-mono text-[0.62rem] uppercase tracking-wide text-muted">
+            Brand kit
+          </span>
+          {UPLOAD_BRANDS.map((b) => (
+            <button
+              key={b.slug}
+              onClick={() => setBrand(b.slug)}
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+                brand === b.slug
+                  ? "border-accent bg-accent-soft text-accent-ink"
+                  : "border-rule bg-surface text-muted hover:border-accent/40",
+              )}
+            >
+              {b.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {error && (
+        <p className="px-4 pb-3 text-center text-xs font-medium text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

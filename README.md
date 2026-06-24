@@ -59,6 +59,32 @@ src/
 
 Tokens live in `tailwind.config.ts` + `src/app/globals.css`. Core palette: ink `#0f0c10`, paper `#faf8f5`, accent purple `#7c3aed`, pink `#db2777`, cyan `#0891b2`. Per-brand identity colors (Lea maroon/pink, MyLegali green, TeamLegali blue, LegaliLearn amber) are in `BRAND_KITS` / `BRAND_COLORS`.
 
+## AI — Google Gemini (free via Google AI Studio)
+
+The AI features run on real **Gemini** through Google AI Studio's free API, via one server helper ([`src/lib/ai/gemini.ts`](src/lib/ai/gemini.ts)) and a set of `/api/*` routes. Every feature ships sample data as a graceful fallback, so the app works with no key and degrades cleanly when the API is unavailable.
+
+Wired AI features (all live with a key):
+
+| Feature | Route | Where |
+| --- | --- | --- |
+| Weekly insight digest | `/api/insights` | Analytics → "Regenerate" |
+| AI cut generation (3 candidates) | `/api/cuts` | Studio editor → "Regenerate" |
+| Caption generation | `/api/captions` | Captions → "Regenerate" |
+| Trauma-informed safety check | `/api/safety` | Captions → "Safety check" |
+| Caption / subtitle translation | `/api/translate` | Captions language grid · Subtitles "Auto-translate" |
+| Best-time scheduling | `/api/best-times` | Schedule → new-post recommended times |
+
+**Turn on live AI (3 steps):**
+1. Get a free key at **[aistudio.google.com](https://aistudio.google.com) → "Get API key"** (no billing required for the free tier).
+2. Copy `.env.local.example` → `.env.local` and set `GEMINI_API_KEY=...`.
+3. Restart `pnpm dev`, open `/analytics`, and click **Regenerate** on the AI Insight panel.
+
+The panel shows a badge: **✦ Live · Gemini** when the key works, **Sample data** when no key is set, or **Fallback · check key** on an API error.
+
+**How it works:** the routes call [`src/lib/ai/gemini.ts`](src/lib/ai/gemini.ts), which posts to `gemini-2.5-flash` (override with `GEMINI_MODEL`) with a JSON response schema and a small retry/backoff, then returns typed data. The key stays server-side, and each route falls back to the app's sample data on no-key/error. Heads-up: the **free tier returns intermittent `503 "high demand"`**, so heavier calls (cut generation) occasionally fall back to the sample — enabling pay-as-you-go billing on the key's project removes that.
+
+**SkyDeck / GCP:** the free AI Studio key is the fastest start. Your SkyDeck GCP credits matter only if you later move to **Vertex AI** (same Gemini models, higher limits, IAM/VPC) — that swaps the API-key call for a Vertex endpoint + service-account auth in the same route.
+
 ## Notes
 
 This is a faithful, fully-navigable front-end prototype of the PRD. Backend concerns described in the PRD (Whisper transcription, GPT-4V vision scoring, Claude cut generation + safety checks, FFmpeg/Remotion rendering, Meta/TikTok/LinkedIn APIs, Supabase/R2 storage) are represented in the interface — including the API contracts shown as inline dev annotations — but run against static fixtures.

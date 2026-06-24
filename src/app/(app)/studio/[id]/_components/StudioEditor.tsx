@@ -16,6 +16,7 @@ import {
   IconStarFilled,
   IconSparkles,
   IconBolt,
+  IconLoader2,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 import { BrandChip } from "@/components/ui/Misc";
@@ -54,14 +55,45 @@ export function StudioEditor({
   tabs: ReactNode;
 }) {
   const brand = getBrand(project.brandSlug);
-  const hasCandidates = project.candidates.length > 0;
 
-  // selected candidate (index into project.candidates)
+  // live candidates (start from project; may be replaced by regenerate)
+  const [candidates, setCandidates] = useState(project.candidates);
+  const hasCandidates = candidates.length > 0;
+
+  // regenerate state
+  const [regenerating, setRegenerating] = useState(false);
+  const [source, setSource] = useState<"gemini" | "sample" | "error" | null>(
+    null,
+  );
+
+  // selected candidate (index into candidates)
   const initialSel =
     project.selectedCandidate < project.candidates.length
       ? project.selectedCandidate
       : 0;
   const [selected, setSelected] = useState(initialSel);
+
+  async function handleRegenerate() {
+    if (regenerating || !hasCandidates) return;
+    setRegenerating(true);
+    try {
+      const res = await fetch("/api/cuts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: project.id }),
+      });
+      const data = await res.json();
+      if (Array.isArray(data?.candidates) && data.candidates.length > 0) {
+        setCandidates(data.candidates);
+        setSelected(0);
+      }
+      if (data?.source) setSource(data.source);
+    } catch {
+      setSource("error");
+    } finally {
+      setRegenerating(false);
+    }
+  }
   const [voice, setVoice] = useState<VoiceType>(
     project.voiceType === "none" ? "recorded" : project.voiceType,
   );
@@ -74,7 +106,9 @@ export function StudioEditor({
     return base;
   });
 
-  const candidate = hasCandidates ? project.candidates[selected] : null;
+  const candidate = hasCandidates
+    ? candidates[Math.min(selected, candidates.length - 1)]
+    : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
@@ -114,9 +148,18 @@ export function StudioEditor({
             <IconArrowRight size={14} stroke={1.75} />
             Redo
           </Button>
-          <Button variant="ghost" size="sm">
-            <IconRefresh size={14} stroke={1.75} />
-            Regenerate
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRegenerate}
+            disabled={!hasCandidates || regenerating}
+          >
+            {regenerating ? (
+              <IconLoader2 size={14} stroke={1.75} className="animate-spin" />
+            ) : (
+              <IconRefresh size={14} stroke={1.75} />
+            )}
+            {regenerating ? "Generating…" : "Regenerate"}
           </Button>
           <div className="ml-auto flex items-center gap-2">
             <span className="hidden items-center gap-1.5 font-mono text-[0.66rem] text-muted sm:flex">
@@ -144,9 +187,11 @@ export function StudioEditor({
                 {/* --- canvas (preview + candidate strip) --- */}
                 <CanvasArea
                   project={project}
+                  candidates={candidates}
                   candidate={candidate}
                   selected={selected}
                   onSelect={setSelected}
+                  source={source}
                   brandPrimary={brand.primaryColor}
                   brandSecondary={brand.secondaryColor}
                 />
@@ -180,16 +225,20 @@ export function StudioEditor({
 // ---------------------------------------------------------------------------
 function CanvasArea({
   project,
+  candidates,
   candidate,
   selected,
   onSelect,
+  source,
   brandPrimary,
   brandSecondary,
 }: {
   project: VideoProject;
+  candidates: CandidateEdit[];
   candidate: CandidateEdit;
   selected: number;
   onSelect: (i: number) => void;
+  source: "gemini" | "sample" | "error" | null;
   brandPrimary: string;
   brandSecondary: string;
 }) {
@@ -256,7 +305,13 @@ function CanvasArea({
         <span className="font-mono text-[0.55rem] uppercase tracking-[0.2em] text-white/35">
           Cuts
         </span>
-        {project.candidates.map((c, i) => {
+        {source === "gemini" && (
+          <span className="flex items-center gap-1 rounded-full border border-[#7c3aed]/40 bg-[#7c3aed]/15 px-1.5 py-0.5 font-mono text-[0.5rem] font-medium tracking-wide text-[#c4b5fd]">
+            <IconSparkles size={8} stroke={2.5} />
+            Gemini
+          </span>
+        )}
+        {candidates.map((c, i) => {
           const active = i === selected;
           return (
             <button

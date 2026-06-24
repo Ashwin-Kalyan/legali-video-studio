@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IconCalendarPlus,
   IconCalendarCheck,
   IconSparkles,
   IconStarFilled,
+  IconLoader2,
   IconX,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +14,7 @@ import { PlatformIcon } from "@/components/ui/PlatformIcon";
 import { cn } from "@/lib/utils";
 import { BRAND_KITS, BRAND_COLORS } from "@/lib/data/brands";
 import { BEST_TIMES } from "@/lib/data";
-import type { BrandSlug, Platform } from "@/lib/types";
+import type { BrandSlug, BestTimeSlot, Platform } from "@/lib/types";
 
 const PROJECTS = [
   "Awareness hook reel (Jun 8)",
@@ -65,8 +66,63 @@ export function NewPostForm({
     youtube: false,
   });
 
-  const bestTimes = BEST_TIMES[brand];
+  // Live AI-recommended slots. Seed with the static BEST_TIMES for the brand so
+  // something renders instantly; the effect below swaps in live slots.
+  const [bestTimes, setBestTimes] = useState<BestTimeSlot[]>(BEST_TIMES[brand]);
+  const [timesLoading, setTimesLoading] = useState(false);
+  const [timesSource, setTimesSource] = useState<
+    "gemini" | "sample" | "error" | null
+  >(null);
+
   const brandColor = BRAND_COLORS[brand];
+
+  // Stable, order-independent key of the selected platforms so the effect only
+  // re-fires when the actual selection (or brand) changes — not every render.
+  const selectedPlatforms = (Object.keys(platforms) as Platform[]).filter(
+    (p) => platforms[p],
+  );
+  const platformsKey = [...selectedPlatforms].sort().join(",");
+
+  // Fetch live AI-recommended times when the form opens or brand/platforms
+  // change. Show the static BEST_TIMES[brand] immediately as default + fallback.
+  useEffect(() => {
+    let cancelled = false;
+
+    // Instant default for the current brand while the request is in flight.
+    setBestTimes(BEST_TIMES[brand]);
+    setTimesSource(null);
+    setTimesLoading(true);
+
+    (async () => {
+      try {
+        const res = await fetch("/api/best-times", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            brandSlug: brand,
+            platforms: platformsKey ? platformsKey.split(",") : [],
+          }),
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (Array.isArray(data?.slots) && data.slots.length > 0) {
+          setBestTimes(data.slots as BestTimeSlot[]);
+        }
+        setTimesSource(data?.source ?? "error");
+      } catch {
+        if (cancelled) return;
+        // Keep the static fallback already shown.
+        setTimesSource("error");
+      } finally {
+        if (!cancelled) setTimesLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // platformsKey is a stable string derived from the platform selection.
+  }, [brand, platformsKey]);
 
   function togglePlatform(id: Platform) {
     setPlatforms((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -180,6 +236,19 @@ export function NewPostForm({
           <div className="mb-2 flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-accent">
             <IconSparkles size={12} stroke={1.75} />
             AI-recommended times · based on your audience
+            {timesLoading && (
+              <IconLoader2
+                size={12}
+                stroke={1.75}
+                className="animate-spin text-muted"
+                aria-label="Loading recommended times"
+              />
+            )}
+            {!timesLoading && timesSource === "gemini" && (
+              <span className="ml-0.5 inline-flex items-center gap-0.5 rounded-full bg-accent-soft px-1.5 py-0.5 text-[0.55rem] font-semibold normal-case tracking-normal text-accent-ink">
+                ✦ Gemini
+              </span>
+            )}
           </div>
           <div className="grid grid-cols-3 gap-2">
             {bestTimes.map((slot) => {

@@ -175,6 +175,7 @@ export interface KpiPoint {
   engagements: number;
   waitlist: number;
   watchThru: number; // avg watch-through %
+  subscribers: number; // cumulative follower / subscriber count across brands
 }
 
 // --- AI insight digest -----------------------------------------------------

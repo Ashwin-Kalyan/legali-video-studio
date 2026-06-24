@@ -12,6 +12,8 @@ import {
   IconCircleCheck,
   IconCode,
   IconArrowLeft,
+  IconLoader2,
+  IconSparkles,
 } from "@tabler/icons-react";
 import { cn, formatTimecode, formatSrtTime } from "@/lib/utils";
 import { LEA_TRANSCRIPT } from "@/lib/data";
@@ -56,6 +58,11 @@ export function SubtitleEditor({ project }: { project: VideoProject }) {
   const [activeSeg, setActiveSeg] = useState<number>(-1);
   const [format, setFormat] = useState<SubtitleFormat>("SRT");
   const [translated, setTranslated] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translatedSegments, setTranslatedSegments] = useState<string[]>([]);
+  const [translateSource, setTranslateSource] = useState<
+    "gemini" | "sample" | "error" | null
+  >(null);
   const [exported, setExported] = useState(false);
   const [burn, setBurn] = useState<Record<string, boolean>>(
     Object.fromEntries(BURN_OPTS.map((b) => [b.id, b.on])),
@@ -96,11 +103,39 @@ export function SubtitleEditor({ project }: { project: VideoProject }) {
     );
   }
 
-  function autoTranslate() {
-    setTranslated(true);
+  async function autoTranslate() {
+    if (translating) return;
+    setTranslating(true);
     setAnno(
-      `Auto-translate: POST /api/v1/projects/${project.id}/subtitles/translate — {from:"en", to:["id","es"]}. Claude API translates each segment preserving line breaks and timing. Returns parallel caption_languages rows. Bilingual SRT packs both languages in one file.`,
+      `Auto-translate: POST /api/translate — {target:"id"}. Gemini translates each segment preserving line breaks and timing. Returns a parallel array (same length & order) for the Indonesian caption track. Bilingual SRT packs both languages in one file.`,
     );
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          segments: segments.map((s) => s.text),
+          target: "id",
+        }),
+      });
+      const data: {
+        source: "gemini" | "sample" | "error";
+        segments: string[];
+      } = await res.json();
+      setTranslatedSegments(data.segments ?? []);
+      setTranslateSource(data.source ?? "error");
+      setTranslated(true);
+      setAnno(
+        `Auto-translate complete (source: ${data.source}): ${data.segments?.length ?? 0} segments translated to Indonesian (id). Original English is preserved; the ID track is rendered beneath each segment and in the bilingual SRT preview.`,
+      );
+    } catch {
+      setTranslateSource("error");
+      setAnno(
+        "Auto-translate failed: POST /api/translate did not return a valid response. The English track is unchanged — retry to regenerate the Indonesian captions.",
+      );
+    } finally {
+      setTranslating(false);
+    }
   }
 
   function doExport() {
@@ -118,14 +153,16 @@ export function SubtitleEditor({ project }: { project: VideoProject }) {
       : `Exported project-${projectNum}${FORMATS.find((f) => f.key === format)!.ext}`;
 
   // First ~3 segments for the SRT preview
+  const clip = (t: string) => (t.length > 50 ? t.slice(0, 50) + "…" : t);
   const srtPreview = segments
     .slice(0, 3)
-    .map(
-      (s, i) =>
-        `${i + 1}\n${formatSrtTime(s.startMs)} --> ${formatSrtTime(s.endMs)}\n${
-          s.text.length > 50 ? s.text.slice(0, 50) + "…" : s.text
-        }`,
-    )
+    .map((s, i) => {
+      const id = translated ? translatedSegments[i] : undefined;
+      const body = id ? `${clip(s.text)}\n${clip(id)}` : clip(s.text);
+      return `${i + 1}\n${formatSrtTime(s.startMs)} --> ${formatSrtTime(
+        s.endMs,
+      )}\n${body}`;
+    })
     .join("\n\n");
 
   return (
@@ -146,9 +183,16 @@ export function SubtitleEditor({ project }: { project: VideoProject }) {
               </ToolbarButton>
               <ToolbarButton
                 onClick={autoTranslate}
-                icon={<IconLanguage size={14} stroke={1.75} />}
+                disabled={translating}
+                icon={
+                  translating ? (
+                    <IconLoader2 size={14} stroke={1.75} className="animate-spin" />
+                  ) : (
+                    <IconLanguage size={14} stroke={1.75} />
+                  )
+                }
               >
-                Auto-translate
+                {translating ? "Translating…" : "Auto-translate"}
               </ToolbarButton>
               <div className="flex items-center gap-1.5">
                 <span className="rounded-md bg-success-soft px-2 py-1 font-mono text-[0.62rem] font-medium uppercase text-success-ink">
@@ -157,6 +201,12 @@ export function SubtitleEditor({ project }: { project: VideoProject }) {
                 {translated && (
                   <span className="rounded-md bg-cyan-soft px-2 py-1 font-mono text-[0.62rem] font-medium uppercase text-cyan-ink">
                     ID
+                  </span>
+                )}
+                {translateSource === "gemini" && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-brand-lea-soft px-2 py-1 font-mono text-[0.62rem] font-medium text-brand-lea">
+                    <IconSparkles size={11} stroke={1.75} />
+                    Gemini
                   </span>
                 )}
               </div>
@@ -183,17 +233,29 @@ export function SubtitleEditor({ project }: { project: VideoProject }) {
                     <div className="pt-0.5 font-mono text-[0.65rem] text-muted">
                       {formatTimecode(s.startMs)}
                     </div>
-                    <div
-                      contentEditable={active}
-                      suppressContentEditableWarning
-                      className={cn(
-                        "text-sm leading-relaxed outline-none",
-                        active
-                          ? "border-b border-accent text-ink"
-                          : "text-secondary",
+                    <div className="min-w-0">
+                      <div
+                        contentEditable={active}
+                        suppressContentEditableWarning
+                        className={cn(
+                          "text-sm leading-relaxed outline-none",
+                          active
+                            ? "border-b border-accent text-ink"
+                            : "text-secondary",
+                        )}
+                      >
+                        {s.text}
+                      </div>
+                      {translated && translatedSegments[i] && (
+                        <div className="mt-1 flex items-start gap-1.5">
+                          <span className="mt-0.5 rounded bg-cyan-soft px-1 py-0.5 font-mono text-[0.55rem] font-medium uppercase leading-none text-cyan-ink">
+                            ID
+                          </span>
+                          <span className="text-sm leading-relaxed text-cyan-ink">
+                            {translatedSegments[i]}
+                          </span>
+                        </div>
                       )}
-                    >
-                      {s.text}
                     </div>
                     <div className="flex items-center gap-1.5 pt-0.5">
                       <button
@@ -333,15 +395,18 @@ function ToolbarButton({
   children,
   icon,
   onClick,
+  disabled,
 }: {
   children: React.ReactNode;
   icon: React.ReactNode;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-surface px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:border-accent/40 hover:text-ink"
+      disabled={disabled}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-rule bg-surface px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:border-accent/40 hover:text-ink disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:border-rule disabled:hover:text-secondary"
     >
       {icon}
       {children}
