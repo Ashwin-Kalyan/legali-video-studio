@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,82 +8,35 @@ import {
   IconX,
   IconUpload,
   IconPlayerPlayFilled,
-  IconAlertTriangle,
-  IconMicrophone,
-  IconEye,
-  IconLayoutGrid,
   IconClock,
   IconSparkles,
-  IconVideo,
   IconLoader2,
+  IconVideo,
+  IconBrandInstagram,
 } from "@tabler/icons-react";
 import { PageHeader, BrandChip } from "@/components/ui/Misc";
 import { Button } from "@/components/ui/Button";
 import { Tag } from "@/components/ui/Tag";
 import { cn, formatTimecode, shortDate } from "@/lib/utils";
-import { VIDEO_PROJECTS, getBrand } from "@/lib/data";
-import type {
-  VideoProject,
-  ProjectStatus,
-  BrandSlug,
-} from "@/lib/types";
+import { getBrand } from "@/lib/data";
+import type { BrandSlug } from "@/lib/types";
+import type { LiveProject, LiveStatus } from "@/lib/studio/projectStore";
 
-// --- status → tag tone + label --------------------------------------------
 const STATUS_META: Record<
-  ProjectStatus,
-  { tone: "warn" | "success" | "info"; label: string }
+  LiveStatus,
+  { tone: "warn" | "success" | "info" | "danger"; label: string }
 > = {
-  uploading: { tone: "warn", label: "Uploading" },
-  transcribing: { tone: "warn", label: "Transcribing" },
-  analyzing: { tone: "warn", label: "Analyzing" },
-  ready: { tone: "success", label: "Ready" },
-  exported: { tone: "success", label: "Exported" },
+  uploaded: { tone: "warn", label: "Queued" },
+  analyzing: { tone: "warn", label: "AI editing" },
+  ready: { tone: "info", label: "Cuts ready" },
+  rendering: { tone: "warn", label: "Rendering" },
+  rendered: { tone: "success", label: "Rendered" },
+  error: { tone: "danger", label: "Failed" },
 };
 
-const IN_PROGRESS: ProjectStatus[] = ["uploading", "transcribing", "analyzing"];
+const IN_PROGRESS: LiveStatus[] = ["uploaded", "analyzing", "rendering"];
 
-// --- AI Context Engine layers (PRD 5.3) ------------------------------------
-const ENGINE_LAYERS = [
-  {
-    icon: IconMicrophone,
-    label: "Speech",
-    title: "Whisper v3",
-    desc: "Clarity, emotion & hook potential scored per 5s segment.",
-    color: "#7c3aed",
-    soft: "bg-accent-soft",
-    ink: "text-accent-ink",
-  },
-  {
-    icon: IconEye,
-    label: "Visual",
-    title: "GPT-4V · 1fps",
-    desc: "Eye contact, lighting & stability scored per frame.",
-    color: "#0891b2",
-    soft: "bg-cyan-soft",
-    ink: "text-cyan-ink",
-  },
-  {
-    icon: IconSparkles,
-    label: "Brand Voice",
-    title: "Claude align",
-    desc: "Voice fit + prohibited-phrase safety on every candidate.",
-    color: "#db2777",
-    soft: "bg-pink-soft",
-    ink: "text-pink-ink",
-  },
-  {
-    icon: IconLayoutGrid,
-    label: "Format",
-    title: "Constraints",
-    desc: "Duration, pacing, CTA window & 3s hook gate enforced.",
-    color: "#059669",
-    soft: "bg-success-soft",
-    ink: "text-success-ink",
-  },
-];
-
-const BRAND_FILTERS: { slug: BrandSlug | "all"; label: string }[] = [
-  { slug: "all", label: "All brands" },
+const UPLOAD_BRANDS: { slug: BrandSlug; label: string }[] = [
   { slug: "lea", label: "Lea" },
   { slug: "my", label: "MyLegali" },
   { slug: "team", label: "TeamLegali" },
@@ -91,24 +44,50 @@ const BRAND_FILTERS: { slug: BrandSlug | "all"; label: string }[] = [
 ];
 
 function durationLabel(s: number): string {
+  if (!s) return "—";
   if (s < 60) return `${s}s`;
   return formatTimecode(s * 1000).replace(/\.\d+$/, "");
 }
 
-export function StudioGallery() {
+export function StudioGallery({
+  projects: initial,
+}: {
+  projects: LiveProject[];
+}) {
   const [showUpload, setShowUpload] = useState(false);
-  const [brand, setBrand] = useState<BrandSlug | "all">("all");
+  const [projects, setProjects] = useState(initial);
 
-  const projects = VIDEO_PROJECTS.filter(
-    (p) => brand === "all" || p.brandSlug === brand,
-  );
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/studio/list", { cache: "no-store" });
+      const data = await res.json();
+      if (Array.isArray(data.projects)) setProjects(data.projects);
+    } catch {
+      /* keep current list on failure */
+    }
+  }, []);
+
+  // Re-read the list whenever the user arrives / returns to this page so a
+  // project they just created shows up (bypasses Next's client router cache).
+  useEffect(() => {
+    refresh();
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [refresh]);
+
+  // While anything is still processing, poll so cards flip to ready/rendered.
+  useEffect(() => {
+    if (!projects.some((p) => IN_PROGRESS.includes(p.status))) return;
+    const t = setInterval(refresh, 4000);
+    return () => clearInterval(t);
+  }, [projects, refresh]);
 
   return (
     <div className="mx-auto max-w-[1240px] px-6 py-7 md:px-8">
       <PageHeader
         label="Module 2 — AI Cut Studio"
         title="Video Studio"
-        subtitle="Upload raw footage, let the AI context engine score it, and ship platform-ready cuts on brand."
+        subtitle="Upload raw footage — Gemini watches it and FFmpeg cuts it for you into platform-ready vertical edits."
         actions={
           <Button
             variant={showUpload ? "outline" : "primary"}
@@ -124,120 +103,78 @@ export function StudioGallery() {
         }
       />
 
-      {/* Upload dropzone (faux) ------------------------------------------- */}
       {showUpload && <UploadDropzone />}
 
-      {/* AI Context Engine strip ----------------------------------------- */}
-      <section className="mb-7">
-        <div className="mb-3 flex items-center gap-2">
-          <span className="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-accent">
-            AI Context Engine
+      {/* Projects ---------------------------------------------------------- */}
+      <div className="mb-4 flex items-center gap-2">
+        <span className="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-accent">
+          Projects
+        </span>
+        {projects.length > 0 && (
+          <span className="flex items-center gap-1 font-mono text-[0.62rem] text-muted">
+            <IconVideo size={13} stroke={1.75} />
+            {projects.length}
           </span>
-          <span className="font-mono text-[0.62rem] text-muted">
-            4 layers · parallel · &lt;30s
-          </span>
-          <span className="h-px flex-1 bg-rule" />
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {ENGINE_LAYERS.map((layer, i) => (
-            <div
-              key={layer.label}
-              className="group relative overflow-hidden rounded-xl border border-rule bg-surface p-4 shadow-card transition-shadow hover:shadow-card-lg"
-            >
-              <span
-                className="absolute inset-x-0 top-0 h-[3px]"
-                style={{ background: layer.color }}
-              />
-              <div className="flex items-center justify-between">
-                <span
-                  className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-lg",
-                    layer.soft,
-                  )}
-                >
-                  <layer.icon
-                    size={18}
-                    stroke={1.75}
-                    className={layer.ink}
-                  />
-                </span>
-                <span className="font-mono text-[0.62rem] uppercase tracking-wide text-muted">
-                  L{i + 1}
-                </span>
-              </div>
-              <div className="mt-3 font-display text-base font-bold text-ink">
-                {layer.label}
-              </div>
-              <div className="font-mono text-[0.62rem] uppercase tracking-wide text-accent">
-                {layer.title}
-              </div>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted">
-                {layer.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Filter row ------------------------------------------------------- */}
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {BRAND_FILTERS.map((f) => {
-            const active = brand === f.slug;
-            return (
-              <button
-                key={f.slug}
-                onClick={() => setBrand(f.slug)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-                  active
-                    ? "border-accent bg-accent-soft text-accent-ink"
-                    : "border-rule bg-surface text-muted hover:border-accent/40 hover:text-ink",
-                )}
-              >
-                {f.label}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex items-center gap-1.5 font-mono text-[0.7rem] text-muted">
-          <IconVideo size={14} stroke={1.75} />
-          {projects.length} project{projects.length === 1 ? "" : "s"}
-        </div>
+        )}
+        <span className="h-px flex-1 bg-rule" />
       </div>
 
-      {/* Project grid ----------------------------------------------------- */}
-      {projects.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-rule bg-surface-2 py-16 text-center">
-          <p className="font-display text-lg font-bold text-ink">
-            No projects for this brand yet
-          </p>
-          <p className="mt-1 text-sm text-muted">
-            Upload raw footage to start a new cut.
-          </p>
-        </div>
-      ) : (
+      {projects.length === 0 && !showUpload ? (
+        <StartSomethingNew onClick={() => setShowUpload(true)} />
+      ) : projects.length > 0 ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <AddTile onClick={() => setShowUpload(true)} />
           {projects.map((p) => (
             <ProjectCard key={p.id} project={p} />
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Upload dropzone — real file picker (opens Finder), drag-drop, brand select.
-// On upload it creates a project and jumps into the live AI editor.
+// Empty state — one big plus.
 // ---------------------------------------------------------------------------
-const UPLOAD_BRANDS: { slug: BrandSlug; label: string }[] = [
-  { slug: "lea", label: "Lea" },
-  { slug: "my", label: "MyLegali" },
-  { slug: "team", label: "TeamLegali" },
-  { slug: "learn", label: "LegaliLearn" },
-];
+function StartSomethingNew({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group flex w-full flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-rule bg-surface-2 py-24 text-center transition-colors hover:border-accent hover:bg-accent-soft/40"
+    >
+      <span className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-accent/30 bg-surface text-accent shadow-card transition-transform group-hover:scale-105 group-hover:border-accent">
+        <IconPlus size={36} stroke={2} />
+      </span>
+      <span className="font-display text-2xl font-bold text-ink">
+        Start something new
+      </span>
+      <span className="max-w-sm text-sm text-muted">
+        Upload a video and the AI will cut it for you.
+      </span>
+    </button>
+  );
+}
 
+// Add-new tile shown alongside existing projects.
+function AddTile({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="group flex min-h-[260px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-rule bg-surface-2 text-center transition-colors hover:border-accent hover:bg-accent-soft/40"
+    >
+      <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent/30 bg-surface text-accent transition-transform group-hover:scale-105">
+        <IconPlus size={26} stroke={2} />
+      </span>
+      <span className="font-display text-base font-bold text-ink">
+        Start something new
+      </span>
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Upload dropzone — real file picker (opens Finder), drag-drop, brand select.
+// ---------------------------------------------------------------------------
 function UploadDropzone() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -376,52 +313,50 @@ function UploadDropzone() {
 }
 
 // ---------------------------------------------------------------------------
-// Project card
+// Real project card
 // ---------------------------------------------------------------------------
-function ProjectCard({ project }: { project: VideoProject }) {
-  const brand = getBrand(project.brandSlug);
-  const status = STATUS_META[project.status];
+function ProjectCard({ project }: { project: LiveProject }) {
+  const brand = getBrand((project.brandSlug as BrandSlug) ?? "lea");
+  const status = STATUS_META[project.status] ?? STATUS_META.ready;
   const inProgress = IN_PROGRESS.includes(project.status);
-  const needsApproval = project.approvalStatus === "pending";
-
-  const hue = project.thumbnailHue;
-  const gradient = `linear-gradient(155deg, hsl(${hue} 70% 22%), hsl(${
-    (hue + 28) % 360
-  } 65% 38%) 60%, hsl(${(hue + 8) % 360} 60% 14%))`;
+  const title = project.filename.replace(/\.[^.]+$/, "");
+  const gradient = `linear-gradient(155deg, ${brand.primaryColor}, ${brand.secondaryColor})`;
 
   return (
     <Link
-      href={`/studio/${project.id}`}
+      href={`/studio/ai/${project.id}`}
       className="group block overflow-hidden rounded-xl border border-rule bg-surface shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-lg"
     >
-      {/* 9:16-ish thumbnail */}
       <div
         className="relative aspect-[4/5] overflow-hidden"
         style={{ background: gradient }}
       >
-        <div className="absolute inset-0 bg-noise opacity-60" />
-        {/* status + approval tags */}
-        <div className="absolute left-2.5 top-2.5 z-10 flex flex-wrap items-center gap-1.5">
+        <div className="absolute inset-0 bg-noise opacity-50" />
+        <div className="absolute left-2.5 top-2.5 z-10">
           <Tag tone={status.tone} className="shadow-sm">
             {inProgress && (
               <span className="mr-0.5 inline-block h-1.5 w-1.5 animate-pulseDot rounded-full bg-current" />
             )}
             {status.label}
           </Tag>
-          {needsApproval && (
-            <Tag tone="warn" className="shadow-sm">
-              <IconAlertTriangle size={11} stroke={2} />
-              Needs approval
-            </Tag>
+        </div>
+        <div className="absolute right-2.5 top-2.5 z-10 flex items-center gap-1.5">
+          {project.publishedTo && project.publishedTo.length > 0 && (
+            <span
+              className="flex h-5 w-5 items-center justify-center rounded-md text-white shadow-sm"
+              style={{
+                background:
+                  "linear-gradient(95deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)",
+              }}
+              title={`Published to Instagram @${project.publishedTo[0].account}`}
+            >
+              <IconBrandInstagram size={13} stroke={2} />
+            </span>
           )}
+          <span className="rounded-md bg-black/40 px-1.5 py-0.5 font-mono text-[0.62rem] font-medium text-white backdrop-blur-sm">
+            {durationLabel(project.durationS)}
+          </span>
         </div>
-
-        {/* duration chip */}
-        <div className="absolute right-2.5 top-2.5 z-10 rounded-md bg-black/40 px-1.5 py-0.5 font-mono text-[0.62rem] font-medium text-white backdrop-blur-sm">
-          {durationLabel(project.durationS)}
-        </div>
-
-        {/* play affordance */}
         <div className="absolute inset-0 flex items-center justify-center">
           {inProgress ? (
             <div className="flex flex-col items-center gap-2">
@@ -433,7 +368,7 @@ function ProjectCard({ project }: { project: VideoProject }) {
                 />
               </span>
               <span className="font-mono text-[0.6rem] uppercase tracking-wide text-white/70">
-                Processing
+                AI editing
               </span>
             </div>
           ) : (
@@ -445,29 +380,24 @@ function ProjectCard({ project }: { project: VideoProject }) {
             </span>
           )}
         </div>
-
-        {/* brand emoji watermark */}
         <div className="absolute bottom-2.5 right-2.5 text-lg opacity-80">
           {brand.emoji}
         </div>
-        {/* bottom fade */}
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/55 to-transparent" />
-        <div className="absolute bottom-2.5 left-3 right-12 font-mono text-[0.62rem] uppercase tracking-wide text-white/70">
-          {project.id}
-        </div>
       </div>
 
-      {/* meta */}
       <div className="p-3.5">
         <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-ink transition-colors group-hover:text-accent">
-          {project.title}
+          {title}
         </h3>
         <div className="mt-2.5 flex items-center gap-2">
-          <BrandChip slug={project.brandSlug} />
+          <BrandChip slug={project.brandSlug as BrandSlug} />
         </div>
         <div className="mt-3 flex items-center justify-between border-t border-rule pt-2.5">
           <span className="truncate font-mono text-[0.66rem] text-muted">
-            {project.templateName}
+            {project.candidates?.length
+              ? `${project.candidates.length} AI cuts`
+              : "Processing…"}
           </span>
           <span className="flex shrink-0 items-center gap-1 font-mono text-[0.66rem] text-muted">
             <IconClock size={11} stroke={1.75} />

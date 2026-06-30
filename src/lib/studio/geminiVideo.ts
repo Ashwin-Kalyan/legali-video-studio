@@ -140,8 +140,29 @@ const SCHEMA = {
               required: ["startSec", "endSec"],
             },
           },
+          editLog: {
+            type: "array",
+            description:
+              "Plain-language list of every edit decision made for this cut, in order.",
+            items: { type: "string" },
+          },
+          textOverlays: {
+            type: "array",
+            description: "Short on-screen text / caption overlays for key moments.",
+            items: { type: "string" },
+          },
+          musicMood: { type: "string" },
         },
-        required: ["rank", "title", "hook", "caption", "durationS", "score", "segments"],
+        required: [
+          "rank",
+          "title",
+          "hook",
+          "caption",
+          "durationS",
+          "score",
+          "segments",
+          "editLog",
+        ],
       },
     },
   },
@@ -156,21 +177,29 @@ export async function analyzeVideo(
   if (!API_KEY) throw new Error("GEMINI_API_KEY is not set");
 
   const system =
-    `You are an expert short-form social video editor for ${brand.brandName}. ` +
+    `You are an expert short-form MARKETING video editor for ${brand.brandName}. ` +
+    `Every edit you design is a promotional reel whose job is to grow the brand: ` +
+    `stop the scroll, build trust, and drive the audience to act. ` +
     `Brand voice: ${brand.voiceDescription}. Tone: ${brand.toneTags.join(", ")}. ` +
     `Audience: ${brand.targetAudience}. CTA to end on: "${brand.ctaTemplate}". ` +
     `Never use these phrases: ${brand.prohibitedPhrases.join("; ")}.` +
     (brand.traumaInformed
-      ? " Apply trauma-informed, survivor-centered language standards."
+      ? " Apply trauma-informed, survivor-centered language standards — never sensational, never exploit pain."
       : "");
 
   const prompt =
     "Watch this video. First transcribe it with accurate start/end timestamps (seconds). " +
-    "Then design 3 DISTINCT vertical short-form edits (15–45s each). For each edit pick the best " +
-    "segments to KEEP as a list of {startSec, endSec} time ranges from the source (in play order; " +
-    "drop dead air, rambles and weak moments; lead with the strongest 3-second hook). Provide title, " +
-    "hook (<=8 words), a brand-voiced caption, cta, total durationS, a score 0–10 and a breakdown " +
-    "{hook, pacing, brandFit}. Rank them 1 (best) to 3.";
+    "Then design 3 DISTINCT vertical short-form MARKETING edits (15–45s each) that promote the brand. " +
+    "Each cut must follow a hook → value → CTA arc: lead with the strongest 3-second hook, deliver the " +
+    "most compelling/emotional value moment in the middle, and end on the brand CTA. For each edit pick the " +
+    "segments to KEEP as a list of {startSec, endSec} time ranges from the source (in play order; drop dead " +
+    "air, rambles, filler and weak moments). Provide: title, hook (<=8 words), a brand-voiced marketing " +
+    "caption, cta, total durationS, a score 0–10 and a breakdown {hook, pacing, brandFit}. " +
+    "Also return musicMood (the emotional music bed that fits this cut), textOverlays (2–4 short on-screen " +
+    "text lines for key beats), and editLog: a plain-language, ordered list of EVERY edit decision you made " +
+    "for this cut (e.g. 'Trimmed 0:00–0:04 of dead air before the hook', 'Kept the survivor testimonial at " +
+    "0:18–0:27 as the emotional core', 'Cut a 6s tangent at 0:40', 'Ended on the waitlist CTA'). " +
+    "Rank them 1 (best) to 3.";
 
   const body = {
     systemInstruction: { parts: [{ text: system }] },

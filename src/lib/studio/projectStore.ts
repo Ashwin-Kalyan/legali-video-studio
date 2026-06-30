@@ -30,6 +30,26 @@ export interface LiveCandidate {
   score: number;
   breakdown?: { hook: number; pacing: number; brandFit: number };
   segments: LiveSegment[];
+  /** Human-readable list of the edit decisions the AI made for this cut. */
+  editLog?: string[];
+  /** Suggested on-screen text overlays (for the changelog / future burn-in). */
+  textOverlays?: string[];
+  /** Music mood the AI recommends for this marketing cut. */
+  musicMood?: string;
+}
+
+/** A record of a cut being published out to a social platform. */
+export interface PublishRecord {
+  platform: "instagram";
+  account: string;
+  candidateIndex: number;
+  caption: string;
+  permalink: string;
+  at: string;
+  /** Instagram media id when published for real via the Graph API. */
+  mediaId?: string;
+  /** True when recorded without a real Graph API publish (demo / no creds). */
+  simulated?: boolean;
 }
 
 export type LiveStatus =
@@ -53,7 +73,14 @@ export interface LiveProject {
   transcript?: TranscriptLine[];
   candidates?: LiveCandidate[];
   selected?: number;
-  outputs?: { candidateIndex: number; file: string; createdAt: string }[];
+  outputs?: {
+    candidateIndex: number;
+    file: string;
+    createdAt: string;
+    appliedEffects?: string[];
+  }[];
+  /** Cuts that have been pushed out to a social platform (shown in library). */
+  publishedTo?: PublishRecord[];
   error?: string;
 }
 
